@@ -6,7 +6,6 @@ import {
   Surface, 
   useTheme,
   Avatar,
-  MD3Colors
 } from 'react-native-paper';
 
 const onboardingSteps = [
@@ -27,7 +26,7 @@ const onboardingSteps = [
   },
 ];
 
-export default function OnboardingScreen() {
+export default function OnboardingScreen({ navigation }) {
   const [currentStep, setCurrentStep] = useState(0);
   const theme = useTheme();
 
@@ -37,7 +36,7 @@ export default function OnboardingScreen() {
       if (newStep >= 0 && newStep < onboardingSteps.length) {
         setCurrentStep(newStep);
       } else {
-        console.log('Get Started pressed');
+        navigation.navigate('SignIn');
       }
     };
   };

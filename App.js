@@ -1,7 +1,7 @@
 import React from 'react';
 import { PaperProvider, MD3LightTheme } from 'react-native-paper';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import OnboardingScreen from './src/screens/onboarding/OnboardingScreen';
+import AppNavigator from './src/navigation/AppNavigator';
 
 const theme = {
   ...MD3LightTheme,
@@ -16,7 +16,7 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <PaperProvider theme={theme}>
-        <OnboardingScreen />
+        <AppNavigator />
       </PaperProvider>
     </SafeAreaProvider>
   );
