@@ -7,8 +7,8 @@ export default function ChatScreen() {
     { id: 1, text: 'Hello! How can I assist you today?', sender: 'bot' },
   ]);
   const [input, setInput] = useState('');
-  const [isPromptMode, setIsPromptMode] = useState(false); // Toggle between Write Mode and Prompt Mode
-  const [selectedPrompt, setSelectedPrompt] = useState(''); // Selected prewritten prompt
+  const [isPromptMode, setIsPromptMode] = useState(false); 
+  const [selectedPrompt, setSelectedPrompt] = useState('');
   const [prewrittenPrompts] = useState([
     'Write a story about a brave knight.',
     'Describe a futuristic city.',
@@ -25,7 +25,6 @@ export default function ChatScreen() {
     };
     setMessages((prevMessages) => [...prevMessages, userMessage]);
 
-    // Simulate bot response
     setTimeout(() => {
       const botResponse = {
         id: messages.length + 2,
@@ -41,7 +40,6 @@ export default function ChatScreen() {
 
   return (
     <Surface style={{ flex: 1, padding: 16 }}>
-      {/* Mode Toggle */}
       <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
         <Text variant="bodyMedium" style={{ marginRight: 8 }}>
           Write Mode
@@ -52,7 +50,6 @@ export default function ChatScreen() {
         </Text>
       </View>
 
-      {/* Chat Messages */}
       <ScrollView style={{ flex: 1, marginBottom: 16 }}>
         {messages.map((message) => (
           <View
@@ -78,10 +75,8 @@ export default function ChatScreen() {
         ))}
       </ScrollView>
 
-      {/* Input Section */}
       {isPromptMode ? (
         <View>
-          {/* Prewritten Prompts */}
           <Text variant="bodyMedium" style={{ marginBottom: 8 }}>
             Select a prompt:
           </Text>
@@ -96,7 +91,6 @@ export default function ChatScreen() {
             </View>
           ))}
 
-          {/* Custom Prompt Input */}
           <TextInput
             mode="outlined"
             placeholder="Or type your own prompt..."
@@ -117,7 +111,6 @@ export default function ChatScreen() {
         </View>
       )}
 
-      {/* Send Button */}
       <IconButton
         icon="send"
         size={24}

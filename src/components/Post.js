@@ -22,7 +22,6 @@ export default function Post({ postInfo }) {
 
   return (
     <Surface style={styles.container}>
-      {/* Header: User Info */}
       <View style={styles.header}>
         <View style={styles.userInfo}>
           <Image source={{ uri: userImage }} style={styles.userImage} />
@@ -55,12 +54,10 @@ export default function Post({ postInfo }) {
         )}
       </View>
 
-      {/* Post Content */}
       <Text variant="bodyMedium" style={styles.postText}>
         {postText}
       </Text>
 
-      {/* Footer: Actions */}
       <View style={styles.footer}>
         <Button
           icon="thumb-up-outline"
