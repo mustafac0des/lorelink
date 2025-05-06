@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View } from 'react-native';
 import { TextInput, Button, Text, Surface, HelperText, IconButton } from 'react-native-paper';
 
-export default function SignInScreen({ navigation }) {
+export default function SignInScreen({ navigation, setIsLoggedIn }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -13,12 +13,12 @@ export default function SignInScreen({ navigation }) {
       return;
     }
 
-    navigation.navigate('Home');
+    setIsLoggedIn(true);
   };
 
   return (
     <Surface style={{ flex: 1, padding: 16, justifyContent: 'center' }}>
-      <View style={{ alignItems: 'center', marginBottom: 32 }}>
+      <View style={{ alignItems: 'center', marginBottom: 34 }}>
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
           <IconButton icon="book" size={64} style={{}} />
           <Text variant="headlineSmall" style={{ marginLeft: 8, fontWeight: 'bold' }}>

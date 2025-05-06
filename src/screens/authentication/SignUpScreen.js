@@ -28,7 +28,7 @@ export default function SignUpScreen({ navigation }) {
 
   return (
       <Surface style={{ flex: 1, padding: 16, justifyContent: 'center' }}>
-        <View style={{ alignItems: 'center', marginBottom: 32 }}>
+        <View style={{ alignItems: 'center', marginBottom: 34 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <IconButton icon="book" size={64} style={{}} />
             <Text variant="headlineSmall" style={{ marginLeft: 8, fontWeight: 'bold' }}>
