@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, StyleSheet, TouchableOpacity, Linking } from 'react-native';
 import { Text, Button, Avatar, Icon } from '@rneui/themed';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
@@ -6,14 +6,96 @@ import { PostsTab, CommentsTab, LikesTab } from '../components/profile/ProfileTa
 
 const Tab = createMaterialTopTabNavigator();
 
-export default function ProfileScreen({ navigation }) {
+export default function UserProfileScreen({ route, navigation, setIsLoggedIn }) {
+  const { userId, userName, userImage, isOwnProfile = false } = route.params;
+  const [isFollowed, setIsFollowed] = useState(route.params.isFollowed || false);
+
+  const handleFollow = () => {
+    setIsFollowed(!isFollowed);
+  };
+
+  const renderActionButtons = () => {
+    if (isOwnProfile) {
+      return (
+        <View style={styles.buttonContainer}>
+          <Button
+            title="Edit profile"
+            type="outline"
+            onPress={() => navigation.navigate('EditProfile')}
+            containerStyle={styles.editButton}
+            buttonStyle={[styles.button, styles.secondaryButton]}
+            titleStyle={styles.secondaryButtonText}
+          />
+          <Button
+            title="Settings"
+            type="outline"
+            onPress={() => navigation.navigate('Settings')}
+            containerStyle={styles.shareButton}
+            buttonStyle={[styles.button, styles.secondaryButton]}
+            titleStyle={styles.secondaryButtonText}
+          />
+        </View>
+      );
+    }
+
+    return (
+      <View style={styles.buttonContainer}>
+        <Button
+          title={isFollowed ? "Following" : "Follow"}
+          type="solid"
+          onPress={handleFollow}
+          containerStyle={styles.followButton}
+          buttonStyle={[
+            styles.button,
+            isFollowed ? styles.followingButton : styles.primaryButton
+          ]}
+          titleStyle={[
+            styles.buttonText,
+            isFollowed && styles.followingButtonText
+          ]}
+        />
+        <Button
+          title="Mention"
+          type="outline"
+          containerStyle={styles.mentionButton}
+          buttonStyle={[styles.button, styles.secondaryButton]}
+          titleStyle={styles.secondaryButtonText}
+        />
+      </View>
+    );
+  };
+
+  const renderHeaderRight = () => {
+    if (isOwnProfile) {
+      return (
+        <Button
+          type="clear"
+          icon={{
+            name: 'logout',
+            type: 'material-community',
+            size: 24,
+            color: '#fff'
+          }}
+          onPress={() => setIsLoggedIn?.(false)}
+        />
+      );
+    }
+    return null;
+  };
+
+  React.useLayoutEffect(() => {
+    navigation.setOptions({
+      headerRight: renderHeaderRight
+    });
+  }, [navigation, isOwnProfile]);
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
         <View style={styles.headerContent}>
           <View style={styles.userInfo}>
             <View style={styles.nameRow}>
-              <Text style={styles.name}>John Doe</Text>
+              <Text style={styles.name}>{userName}</Text>
               <Icon
                 name="checkbox-marked-circle"
                 type="material-community"
@@ -21,7 +103,7 @@ export default function ProfileScreen({ navigation }) {
                 color="#0095F6"
               />
             </View>
-            <Text style={styles.username}>johndoe</Text>
+            <Text style={styles.username}>@{userName.toLowerCase().replace(/\s/g, '_')}</Text>
             
             <View style={styles.businessInfo}>
               <Text style={styles.infoText}>Writer | Story Enthusiast</Text>
@@ -56,28 +138,12 @@ export default function ProfileScreen({ navigation }) {
           <Avatar
             size={80}
             rounded
-            source={{ uri: 'https://randomuser.me/api/portraits/men/1.jpg' }}
+            source={{ uri: userImage }}
             containerStyle={styles.avatar}
           />
         </View>
 
-        <View style={styles.buttonContainer}>
-          <Button
-            title="Edit profile"
-            type="outline"
-            onPress={() => navigation.navigate('EditProfile')}
-            containerStyle={styles.editButton}
-            buttonStyle={[styles.button, styles.secondaryButton]}
-            titleStyle={styles.secondaryButtonText}
-          />
-          <Button
-            title="Share profile"
-            type="outline"
-            containerStyle={styles.shareButton}
-            buttonStyle={[styles.button, styles.secondaryButton]}
-            titleStyle={styles.secondaryButtonText}
-          />
-        </View>
+        {renderActionButtons()}
       </View>
 
       <Tab.Navigator
@@ -184,6 +250,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     marginTop: 16,
   },
+  followButton: {
+    flex: 1,
+    marginRight: 8,
+  },
+  mentionButton: {
+    flex: 1,
+    marginLeft: 8,
+  },
   editButton: {
     flex: 1,
     marginRight: 8,
@@ -196,10 +270,26 @@ const styles = StyleSheet.create({
     height: 36,
     borderRadius: 8,
   },
+  primaryButton: {
+    backgroundColor: '#000',
+    borderWidth: 0,
+  },
   secondaryButton: {
     backgroundColor: 'transparent',
     borderWidth: 1,
     borderColor: '#666',
+  },
+  followingButton: {
+    backgroundColor: 'transparent',
+    borderWidth: 1,
+    borderColor: '#666',
+  },
+  buttonText: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  followingButtonText: {
+    color: '#000',
   },
   secondaryButtonText: {
     color: '#000',

@@ -1,149 +1,199 @@
-import React from 'react';
-import { View, StyleSheet, Image } from 'react-native';
-import { Text, Button, IconButton, Badge, Surface } from 'react-native-paper';
+import React, { useState } from 'react';
+import { View, TouchableOpacity, Pressable } from 'react-native';
+import { Text, Button, Icon, Avatar, Input } from '@rneui/themed';
+import { useNavigation } from '@react-navigation/native';
+
+const WORD_LIMIT = 30; // Approximately 200 words
 
 export default function Post({ postInfo }) {
+  const navigation = useNavigation();
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [showCommentInput, setShowCommentInput] = useState(false);
+  const [comment, setComment] = useState('');
+  const [isLiked, setIsLiked] = useState(false);
+  
   const {
+    id,
     userImage,
     userName,
     datePosted,
     isFollowed,
+    isGenerated,
     isEdited,
-    isAIGenerated,
     postText,
     likeCount,
     commentCount,
-    shareCount,
     onLike,
     onComment,
     onShare,
     onFollow,
   } = postInfo;
 
+  const words = postText.split(' ');
+  const shouldTruncate = words.length > WORD_LIMIT;
+  const displayText = isExpanded || !shouldTruncate 
+    ? postText 
+    : words.slice(0, WORD_LIMIT).join(' ') + '...';
+
+  const handleLike = () => {
+    setIsLiked(!isLiked);
+    onLike?.();
+  };
+
+  const handleComment = () => {
+    if (comment.trim()) {
+      onComment?.(comment);
+      setComment('');
+    }
+    setShowCommentInput(false);
+  };
+
+  const handlePostPress = () => {
+    navigation.navigate('Post', { postInfo });
+  };
+
+  const handleUserPress = () => {
+    navigation.navigate('UserProfile', {
+      userId: id,
+      userName: userName,
+      userImage: userImage,
+      isOwnProfile: false,
+      isFollowed: isFollowed
+    });
+  };
+
   return (
-    <Surface style={styles.container}>
-      <View style={styles.header}>
-        <View style={styles.userInfo}>
-          <Image source={{ uri: userImage }} style={styles.userImage} />
-          <View style={styles.userDetails}>
-            <Text variant="bodyMedium" style={styles.userName}>
-              {userName}
-            </Text>
-            <Text variant="bodySmall" style={styles.datePosted}>
-              {datePosted} {isEdited && <Text style={styles.edited}>(Edited)</Text>}
-            </Text>
-          </View>
-          {isAIGenerated && (
-            <Badge style={styles.badge} size={24}>
-              AI
-            </Badge>
-          )}
-          {!isAIGenerated && (
-            <Badge style={[styles.badge, styles.selfWritten]} size={24}>
-              Self
-            </Badge>
-          )}
-        </View>
-        {!isFollowed && (
-          <IconButton
-            icon="plus-circle"
-            size={20}
-            style={styles.followButton}
-            onPress={onFollow}
+    <Pressable 
+      onPress={handlePostPress}
+      style={{
+        marginHorizontal: 12,
+        marginVertical: 0,
+        padding: 16,
+        backgroundColor: '#ffffff',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.08,
+        shadowRadius: 2,
+        elevation: 3,
+      }}
+    >
+      <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
+        <TouchableOpacity onPress={handleUserPress}>
+          <Avatar
+            size={40}
+            rounded
+            source={{ uri: userImage }}
           />
+        </TouchableOpacity>
+        <View style={{ marginLeft: 12, flex: 1 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <TouchableOpacity onPress={handleUserPress}>
+              <Text style={{ fontSize: 16, fontWeight: '600', color: '#000' }}>
+                {userName}
+              </Text>
+            </TouchableOpacity>
+            {!isFollowed && (
+              <Button
+                type="outline"
+                buttonStyle={{ borderColor: '#6200ee', backgroundColor: 'white', paddingHorizontal: 6, paddingVertical: 2 }}
+                title="Follow"
+                titleStyle={{ fontSize: 10, color: '#6200ee'}}
+                containerStyle={{ marginLeft: 8 }}
+                onPress={(e) => {
+                  e.stopPropagation();
+                  onFollow?.();
+                }}
+              />
+            )}
+          </View>
+          <Text style={{ fontSize: 13, color: '#666666' }}>
+            {datePosted} {isGenerated ? '• Generated' : '• Human'} {isEdited && '• Edited'}
+          </Text>
+        </View>
+      </View>
+
+      <TouchableOpacity 
+        activeOpacity={shouldTruncate ? 0.7 : 1}
+        onPress={() => shouldTruncate && setIsExpanded(!isExpanded)}
+      >
+        <Text style={{ fontSize: 15, lineHeight: 20, color: '#000', marginBottom: shouldTruncate ? 8 : 16 }}>
+          {displayText}
+        </Text>
+        {shouldTruncate && !isExpanded && (
+          <Text style={{ color: '#6200ee', fontSize: 14 }}>
+            Read more
+          </Text>
         )}
+      </TouchableOpacity>
+
+      <View style={{ flexDirection: 'row' }}>
+        <Button
+          type="clear"
+          icon={{
+            name: isLiked ? 'heart' : 'heart-outline',
+            type: 'material-community',
+            size: 20,
+            color: isLiked ? '#6200ee' : '#666666'
+          }}
+          iconRight
+          title={likeCount.toString()}
+          titleStyle={{ fontSize: 14, color: isLiked ? '#6200ee' : '#666666', marginRight: 4 }}
+          onPress={(e) => {
+            e.stopPropagation();
+            handleLike();
+          }}
+        />
+        <Button
+          type="clear"
+          icon={{
+            name: 'comment-outline',
+            type: 'material-community',
+            size: 20,
+            color: '#666666'
+          }}
+          iconRight
+          title={commentCount.toString()}
+          titleStyle={{ fontSize: 14, color: '#666666', marginRight: 4 }}
+          onPress={(e) => {
+            e.stopPropagation();
+            setShowCommentInput(!showCommentInput);
+          }}
+        />
+        <Button
+          type="clear"
+          icon={{
+            name: 'share-outline',
+            type: 'material-community',
+            size: 20,
+            color: '#666666'
+          }}
+          onPress={(e) => {
+            e.stopPropagation();
+            onShare?.();
+          }}
+        />
       </View>
 
-      <Text variant="bodyMedium" style={styles.postText}>
-        {postText}
-      </Text>
-
-      <View style={styles.footer}>
-        <Button
-          icon="thumb-up-outline"
-          mode="text"
-          onPress={onLike}
-          contentStyle={styles.actionButton}
-        >
-          {likeCount}
-        </Button>
-        <Button
-          icon="comment-outline"
-          mode="text"
-          onPress={onComment}
-          contentStyle={styles.actionButton}
-        >
-          {commentCount}
-        </Button>
-        <Button
-          icon="share-outline"
-          mode="text"
-          onPress={onShare}
-          contentStyle={styles.actionButton}
-        >
-          {shareCount}
-        </Button>
-      </View>
-    </Surface>
+      {showCommentInput && (
+        <View style={{ marginTop: 8, flexDirection: 'row', alignItems: 'center' }}>
+          <Input
+            placeholder="Write a comment..."
+            value={comment}
+            onChangeText={setComment}
+            containerStyle={{ flex: 1, marginBottom: 0 }}
+            inputContainerStyle={{ borderBottomWidth: 0 }}
+            rightIcon={
+              <Icon
+                name="send"
+                type="material-community"
+                color={comment.trim() ? '#6200ee' : '#cccccc'}
+                size={24}
+                onPress={handleComment}
+              />
+            }
+          />
+        </View>
+      )}
+    </Pressable>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    margin: 16,
-    padding: 16,
-    borderRadius: 8,
-    elevation: 2,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  userInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-  },
-  userImage: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    marginRight: 8,
-  },
-  userDetails: {
-    flex: 1,
-  },
-  userName: {
-    fontWeight: 'bold',
-  },
-  datePosted: {
-    color: '#6b6b6b',
-  },
-  edited: {
-    fontStyle: 'italic',
-    color: '#6b6b6b',
-  },
-  badge: {
-    backgroundColor: '#6200ee',
-    color: 'white',
-    marginLeft: 8,
-  },
-  selfWritten: {
-    backgroundColor: '#03dac6',
-  },
-  followButton: {
-    marginLeft: 8,
-  },
-  postText: {
-    marginVertical: 8,
-  },
-  footer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 8,
-  },
-  actionButton: {
-    flexDirection: 'row-reverse',
-  },
-});

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View } from 'react-native';
-import { TextInput, Button, Text, Surface, HelperText, IconButton } from 'react-native-paper';
+import { Input, Button, Text, Icon } from '@rneui/themed';
 
 export default function SignInScreen({ navigation, setIsLoggedIn }) {
   const [email, setEmail] = useState('');
@@ -17,51 +17,65 @@ export default function SignInScreen({ navigation, setIsLoggedIn }) {
   };
 
   return (
-    <Surface style={{ flex: 1, padding: 16, justifyContent: 'center' }}>
+    <View style={{ flex: 1, padding: 16, justifyContent: 'center', backgroundColor: '#ffffff' }}>
       <View style={{ alignItems: 'center', marginBottom: 34 }}>
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <IconButton icon="book" size={64} style={{}} />
-          <Text variant="headlineSmall" style={{ marginLeft: 8, fontWeight: 'bold' }}>
+          <Icon
+            name="book"
+            type="material-community"
+            size={64}
+            color="#6200ee"
+          />
+          <Text 
+            h4 
+            style={{ marginLeft: 8, fontWeight: 'bold' }}
+          >
             Lorelink
           </Text>
         </View>
-        <Text variant="bodyMedium" style={{ color: '#6b6b6b', marginTop: 4 }}>
+        <Text style={{ color: '#6b6b6b', marginTop: 4, fontSize: 16 }}>
           Sign In to continue to Lorelink
         </Text>
       </View>
 
-      <HelperText type="error" visible={!!error}>
+      {error ? (
+        <Text style={{ color: '#ff3333', marginBottom: 16, textAlign: 'center' }}>
           {error}
-      </HelperText>
+        </Text>
+      ) : null}
 
-      <View style={{ borderRadius: 20, overflow: 'hidden', marginBottom: 16 }}>
-        <TextInput
-          label="Email"
+      <View style={{ marginBottom: 16 }}>
+        <Input
+          placeholder="Email"
           value={email}
           onChangeText={setEmail}
           keyboardType="email-address"
-          style={{ marginBottom: 0 }}
+          autoCapitalize="none"
+          leftIcon={{ type: 'material-community', name: 'email', color: '#666' }}
         />
 
-        <TextInput
-          label="Password"
+        <Input
+          placeholder="Password"
           value={password}
           onChangeText={setPassword}
           secureTextEntry
+          leftIcon={{ type: 'material-community', name: 'lock', color: '#666' }}
         />
-        
 
-        <Button mode="contained" onPress={handleSignIn} style={{ height: 56, justifyContent: 'center', borderRadius: 0}}>
-          Sign In
-        </Button>
+        <Button
+          title="Sign In"
+          onPress={handleSignIn}
+          buttonStyle={{ backgroundColor: '#6200ee', height: 56, borderRadius: 8 }}
+          containerStyle={{ marginTop: 16 }}
+        />
       </View>
+
       <Button
-          mode="text"
-          onPress={() => navigation.navigate('SignUp')}
-          style={{ marginTop: 8 }}
-        >
-          Don't have an account? Sign Up
-        </Button>
-    </Surface>
+        type="clear"
+        onPress={() => navigation.navigate('SignUp')}
+        titleStyle={{ color: '#6200ee' }}
+        title="Don't have an account? Sign Up"
+      />
+    </View>
   );
 }

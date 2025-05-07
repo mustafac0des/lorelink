@@ -1,18 +1,12 @@
 import React, { useState } from 'react';
 import { View } from 'react-native';
-import { 
-  Button, 
-  Text, 
-  Surface, 
-  useTheme,
-  Avatar,
-} from 'react-native-paper';
+import { Button, Text, Icon } from '@rneui/themed';
 
 const onboardingSteps = [
   {
     title: 'Welcome to LoreLink',
     description: 'LoreLink is a platform for writers and readers to connect and share stories',
-    icon: 'book-open-variant',
+    icon: 'book-open',
   },
   {
     title: 'AI-Powered Stories',
@@ -22,13 +16,12 @@ const onboardingSteps = [
   {
     title: 'Share Your Tales',
     description: 'Connect with other writers and share your stories with the world',
-    icon: 'share-variant',
+    icon: 'share',
   },
 ];
 
 export default function OnboardingScreen({ navigation }) {
   const [currentStep, setCurrentStep] = useState(0);
-  const theme = useTheme();
 
   const handleStep = (count) => {
     return () => {
@@ -42,48 +35,30 @@ export default function OnboardingScreen({ navigation }) {
   };
 
   return (
-    <Surface style={{ flex: 1 }}>
-      <View style={{ 
-        flex: 1, 
-        alignItems: 'center', 
-        justifyContent: 'center', 
-        padding: 24
-      }}>
-        <Avatar.Icon 
+    <View style={{ flex: 1, backgroundColor: '#ffffff' }}>
+      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+        <Icon
+          name={onboardingSteps[currentStep].icon}
+          type="material-community"
           size={120}
-          icon={onboardingSteps[currentStep].icon}
-          style={{ marginBottom: 24 }}
-          color={theme.colors.primary}
-          backgroundColor={theme.colors.primaryContainer}
+          color="#6200ee"
+          containerStyle={{ marginBottom: 24 }}
         />
         <Text 
-          variant="headlineMedium" 
-          style={{ 
-            textAlign: 'center', 
-            marginBottom: 8,
-            color: theme.colors.onSurface 
-          }}
+          h3 
+          h3Style={{ textAlign: 'center', marginBottom: 8 }}
         >
           {onboardingSteps[currentStep].title}
         </Text>
-        <Text 
-          variant="bodyMedium" 
-          style={{ 
-            textAlign: 'center', 
-            marginHorizontal: 24,
-            color: theme.colors.onSurfaceVariant
-          }}
+        <Text
+          style={{ textAlign: 'center', marginHorizontal: 24, color: '#666666', fontSize: 16 }}
         >
           {onboardingSteps[currentStep].description}
         </Text>
       </View>
 
       <View style={{ padding: 24 }}>
-        <View style={{ 
-          flexDirection: 'row', 
-          justifyContent: 'center', 
-          marginBottom: 24
-        }}>
+        <View style={{ flexDirection: 'row', justifyContent: 'center', marginBottom: 24 }}>
           {onboardingSteps.map((_, index) => (
             <View
               key={index}
@@ -92,39 +67,40 @@ export default function OnboardingScreen({ navigation }) {
                 height: 8,
                 borderRadius: 4,
                 marginHorizontal: 4,
-                backgroundColor: index === currentStep 
-                  ? theme.colors.primary 
-                  : theme.colors.surfaceVariant,
+                backgroundColor: index === currentStep ? '#6200ee' : '#e0e0e0',
               }}
             />
           ))}
         </View>
 
-        <View style={{ 
-          flexDirection: 'row', 
-          justifyContent: 'space-evenly',
-        }}>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-evenly' }}>
           {currentStep > 0 && (
             <Button
-              mode="outlined"
+              type="outline"
               onPress={handleStep(-1)}
-              icon="arrow-left"
-              style={{ marginRight: 8 }}
-            >
-              Back
-            </Button>
+              icon={{
+                name: 'arrow-left',
+                type: 'material-community',
+                color: '#6200ee',
+              }}
+              buttonStyle={{ minWidth: 120, borderRadius: 8 }}
+              titleStyle={{ color: '#6200ee' }}
+              title="Back"
+            />
           )}
           <Button
-            mode="contained"
-            onPress={handleStep(+1)}
-            icon="arrow-right"
-            contentStyle={{ flexDirection: 'row-reverse' }}
-            style={{ marginLeft: 8 }}
-          >
-            Next
-          </Button>
+            onPress={handleStep(1)}
+            icon={{
+              name: 'arrow-right',
+              type: 'material-community',
+              color: 'white',
+            }}
+            iconRight
+            buttonStyle={{ minWidth: 120, borderRadius: 8, backgroundColor: '#6200ee' }}
+            title="Next"
+          />
         </View>
       </View>
-    </Surface>
+    </View>
   );
 }

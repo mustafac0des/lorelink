@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View } from 'react-native';
-import { TextInput, Button, Text, Surface, HelperText, IconButton } from 'react-native-paper';
+import { Input, Button, Text, Icon } from '@rneui/themed';
 
 export default function SignUpScreen({ navigation }) {
   const [email, setEmail] = useState('');
@@ -24,63 +24,78 @@ export default function SignUpScreen({ navigation }) {
     navigation.navigate('SignIn');
   };
 
-  const isEmailValid = email.includes('@');
-
   return (
-      <Surface style={{ flex: 1, padding: 16, justifyContent: 'center' }}>
-        <View style={{ alignItems: 'center', marginBottom: 34 }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <IconButton icon="book" size={64} style={{}} />
-            <Text variant="headlineSmall" style={{ marginLeft: 8, fontWeight: 'bold' }}>
-              Lorelink
-            </Text>
-          </View>
-          <Text variant="bodyMedium" style={{ color: '#6b6b6b', marginTop: 4 }}>
-            Sign Up to continue to Lorelink
+    <View style={{ flex: 1, padding: 16, justifyContent: 'center', backgroundColor: '#ffffff' }}>
+      <View style={{ alignItems: 'center', marginBottom: 34 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <Icon
+            name="book"
+            type="material-community"
+            size={64}
+            color="#6200ee"
+          />
+          <Text 
+            h4 
+            style={{ marginLeft: 8, fontWeight: 'bold' }}
+          >
+            Lorelink
           </Text>
         </View>
-  
-        <HelperText type="error" visible={!!error}>
-            {error}
-        </HelperText>
-  
-        <View style={{ borderRadius: 20, overflow: 'hidden', marginBottom: 16 }}>
-          <TextInput
-            label="Email"
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-          />
-  
-          <TextInput
-            label="Password"
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-          />
+        <Text style={{ color: '#6b6b6b', marginTop: 4, fontSize: 16 }}>
+          Sign Up to continue to Lorelink
+        </Text>
+      </View>
 
-          <TextInput
-            label="Confirm Password"
-            value={password}
-            onChangeText={setConfirmPassword}
-            secureTextEntry
-          />
-          
-  
-          <Button mode="contained" onPress={handleSignUp} style={{ height: 56, justifyContent: 'center', borderRadius: 0, marginTop: 1}}>
-            Sign Up
-          </Button>
-        </View>
+      {error ? (
+        <Text style={{ color: '#ff3333', marginBottom: 16, textAlign: 'center' }}>
+          {error}
+        </Text>
+      ) : null}
+
+      <View style={{ marginBottom: 16 }}>
+        <Input
+          placeholder="Email"
+          value={email}
+          onChangeText={setEmail}
+          keyboardType="email-address"
+          autoCapitalize="none"
+          leftIcon={{ type: 'material-community', name: 'email', color: '#666' }}
+        />
+
+        <Input
+          placeholder="Password"
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry
+          leftIcon={{ type: 'material-community', name: 'lock', color: '#666' }}
+        />
+
+        <Input
+          placeholder="Confirm Password"
+          value={confirmPassword}
+          onChangeText={setConfirmPassword}
+          secureTextEntry
+          leftIcon={{ type: 'material-community', name: 'lock', color: '#666' }}
+        />
+
         <Button
-            mode="text"
-            onPress={() => navigation.navigate('SignIn')}
-            style={{ marginTop: 8 }}
-          >
-            Don't have an account? Sign In
-          </Button>
-        <HelperText type="info" style={{ textAlign: 'center'}}>
-          By signing in, you agree to Lorelink's Terms of Service and Privacy Policy.
-        </HelperText>
-      </Surface>
-    );
+          title="Sign Up"
+          onPress={handleSignUp}
+          buttonStyle={{ backgroundColor: '#6200ee', height: 56, borderRadius: 8 }}
+          containerStyle={{ marginTop: 16 }}
+        />
+      </View>
+
+      <Button
+        type="clear"
+        onPress={() => navigation.navigate('SignIn')}
+        titleStyle={{ color: '#6200ee' }}
+        title="Already have an account? Sign In"
+      />
+
+      <Text style={{ textAlign: 'center', color: '#666666', marginTop: 16, fontSize: 14 }}>
+        By signing in, you agree to Lorelink's Terms of Service and Privacy Policy.
+      </Text>
+    </View>
+  );
 }
