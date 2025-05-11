@@ -1,27 +1,27 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { View } from 'react-native';
 import { Input, Button, Text, Icon } from '@rneui/themed';
 
-export default function SignUpScreen({ navigation }) {
+import { auth } from '../../../firebaseConfig';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+
+export default function SignInScreen({ navigation }) {
+  
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
 
-  const handleSignUp = () => {
-    if (!email || !password || !confirmPassword) {
+  const handleSignIn = async () => {
+    if (!email || !password) {
       setError('Please fill in all fields');
       return;
     }
 
-    if (password !== confirmPassword) {
-      setError('Passwords do not match');
-      return;
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+    } catch (err) {
+      setError(err.message || 'Authentication failed');
     }
-
-    setError('');
-    console.log('Sign Up:', { email, password, confirmPassword });
-    navigation.navigate('SignIn');
   };
 
   return (
@@ -42,7 +42,7 @@ export default function SignUpScreen({ navigation }) {
           </Text>
         </View>
         <Text style={{ color: '#6b6b6b', marginTop: 4, fontSize: 16 }}>
-          Sign Up to continue to Lorelink
+          Sign In to continue to Lorelink
         </Text>
       </View>
 
@@ -70,17 +70,9 @@ export default function SignUpScreen({ navigation }) {
           leftIcon={{ type: 'material-community', name: 'lock', color: '#666' }}
         />
 
-        <Input
-          placeholder="Confirm Password"
-          value={confirmPassword}
-          onChangeText={setConfirmPassword}
-          secureTextEntry
-          leftIcon={{ type: 'material-community', name: 'lock', color: '#666' }}
-        />
-
         <Button
-          title="Sign Up"
-          onPress={handleSignUp}
+          title="Sign In"
+          onPress={handleSignIn}
           buttonStyle={{ backgroundColor: '#6200ee', height: 56, borderRadius: 8 }}
           containerStyle={{ marginTop: 16 }}
         />
@@ -88,14 +80,10 @@ export default function SignUpScreen({ navigation }) {
 
       <Button
         type="clear"
-        onPress={() => navigation.navigate('SignIn')}
+        onPress={() => navigation.navigate('SignUp')}
         titleStyle={{ color: '#6200ee' }}
-        title="Already have an account? Sign In"
+        title="Don't have an account? Sign Up"
       />
-
-      <Text style={{ textAlign: 'center', color: '#666666', marginTop: 16, fontSize: 14 }}>
-        By signing in, you agree to Lorelink's Terms of Service and Privacy Policy.
-      </Text>
     </View>
   );
 }

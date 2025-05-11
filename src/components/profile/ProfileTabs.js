@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, FlatList } from 'react-native';
 import { Text } from '@rneui/themed';
-import Post from '../Post';
+import Post from '../home/Posts';
 
 export function PostsTab() {
   const posts = [
