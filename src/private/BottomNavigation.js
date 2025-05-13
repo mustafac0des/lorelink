@@ -1,20 +1,21 @@
 import React from 'react';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Icon } from '@rneui/themed';
-import { HomeStack } from './HomeStack';
-import ChatScreen from '../screens/private/StoryScreen';
-import { ProfileStackScreen } from './ProfileStack';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+
+import { HomeStack } from './home/HomeStack';
+import Compose from './compose/Compose';
+import { ProfileStackScreen } from './profile/ProfileStack';
 
 const Tab = createBottomTabNavigator();
 
-export function MainTabs() {
+export function BottomTabs() {
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
         tabBarIcon: ({ color, size }) => (
           <Icon
             name={
-              route.name === 'Home' ? 'home' :
+              route.name === 'HomeTab' ? 'home' :
               route.name === 'Write' ? 'plus' :
               'account'
             }
@@ -37,7 +38,7 @@ export function MainTabs() {
       />
       <Tab.Screen 
         name="Write"
-        component={ChatScreen}
+        component={Compose}
       />
       <Tab.Screen 
         name="Profile"

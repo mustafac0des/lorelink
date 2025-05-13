@@ -1,28 +1,12 @@
 import { useState } from 'react';
 import { View } from 'react-native';
 import { Input, Button, Text, Icon } from '@rneui/themed';
+import { handleSignIn } from '../functions/userService' 
 
-import { auth } from '../../../firebaseConfig';
-import { signInWithEmailAndPassword } from 'firebase/auth';
-
-export default function SignInScreen({ navigation }) {
+export default function SignIn ({ navigation }) {
   
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-
-  const handleSignIn = async () => {
-    if (!email || !password) {
-      setError('Please fill in all fields');
-      return;
-    }
-
-    try {
-      await signInWithEmailAndPassword(auth, email, password);
-    } catch (err) {
-      setError(err.message || 'Authentication failed');
-    }
-  };
 
   return (
     <View style={{ flex: 1, padding: 16, justifyContent: 'center', backgroundColor: '#ffffff' }}>
@@ -46,12 +30,6 @@ export default function SignInScreen({ navigation }) {
         </Text>
       </View>
 
-      {error ? (
-        <Text style={{ color: '#ff3333', marginBottom: 16, textAlign: 'center' }}>
-          {error}
-        </Text>
-      ) : null}
-
       <View style={{ marginBottom: 16 }}>
         <Input
           placeholder="Email"
@@ -61,7 +39,6 @@ export default function SignInScreen({ navigation }) {
           autoCapitalize="none"
           leftIcon={{ type: 'material-community', name: 'email', color: '#666' }}
         />
-
         <Input
           placeholder="Password"
           value={password}
@@ -69,15 +46,13 @@ export default function SignInScreen({ navigation }) {
           secureTextEntry
           leftIcon={{ type: 'material-community', name: 'lock', color: '#666' }}
         />
-
         <Button
           title="Sign In"
-          onPress={handleSignIn}
+          onPress={() => handleSignIn(email, password)}
           buttonStyle={{ backgroundColor: '#6200ee', height: 56, borderRadius: 8 }}
           containerStyle={{ marginTop: 16 }}
         />
       </View>
-
       <Button
         type="clear"
         onPress={() => navigation.navigate('SignUp')}

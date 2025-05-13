@@ -1,16 +1,16 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
-import HomeScreen from '../screens/private/HomeScreen';
-import PostScreen from '../screens/private/PostScreen';
-import ProfileScreen from '../screens/private/ProfileScreen';
+import Home from './Home'
+import PostScreen from './PostScreen';
+import Profile from '../profile/Profile';
 
 const Stack = createNativeStackNavigator();
 
 export function HomeStack() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="HomeScreen" component={HomeScreen} />
+      <Stack.Screen name="HomeScreen" component={Home} />
       <Stack.Screen 
         name="Post" 
         component={PostScreen}
@@ -21,9 +21,10 @@ export function HomeStack() {
           headerTintColor: '#fff',
         }}
       />
+
       <Stack.Screen 
         name="Profile" 
-        component={ProfileScreen}
+        component={Profile}
         options={{ 
           headerShown: true,
           title: 'Profile',

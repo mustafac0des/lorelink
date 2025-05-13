@@ -2,15 +2,18 @@ import React, { useState } from 'react';
 import { View, TouchableOpacity, Pressable } from 'react-native';
 import { Text, Button, Icon, Avatar, Input } from '@rneui/themed';
 import { useNavigation } from '@react-navigation/native';
+import { toggleLike, addComment } from '../../functions/postService';
 
 const WORD_LIMIT = 30; // Approximately 200 words
 
-export default function Post({ postInfo }) {
+export default function HomePost({ postInfo }) {
   const navigation = useNavigation();
   const [isExpanded, setIsExpanded] = useState(false);
   const [showCommentInput, setShowCommentInput] = useState(false);
   const [comment, setComment] = useState('');
   const [isLiked, setIsLiked] = useState(false);
+  const [localLikeCount, setLocalLikeCount] = useState(0);
+  const [localCommentCount, setLocalCommentCount] = useState(0);
   
   const {
     id,
@@ -19,15 +22,17 @@ export default function Post({ postInfo }) {
     datePosted,
     isFollowed,
     isGenerated,
-    isEdited,
     postText,
     likeCount,
     commentCount,
-    onLike,
-    onComment,
     onShare,
     onFollow,
   } = postInfo;
+
+  useEffect(() => {
+    setLocalLikeCount(likeCount || 0);
+    setLocalCommentCount(commentCount || 0);
+  }, [likeCount, commentCount]);
 
   const words = postText.split(' ');
   const shouldTruncate = words.length > WORD_LIMIT;
@@ -35,15 +40,27 @@ export default function Post({ postInfo }) {
     ? postText 
     : words.slice(0, WORD_LIMIT).join(' ') + '...';
 
-  const handleLike = () => {
-    setIsLiked(!isLiked);
-    onLike?.();
+  const handleLike = async () => {
+    try {
+      const result = await toggleLike(id);
+      setIsLiked(result);
+      setLocalLikeCount(prev => result ? prev + 1 : Math.max(prev - 1, 0));
+    } catch (error) {
+      console.error('Error toggling like:', error);
+    }
   };
 
-  const handleComment = () => {
+  const handleComment = async () => {
     if (comment.trim()) {
-      onComment?.(comment);
-      setComment('');
+      try {
+        const commentId = await addComment(id, comment.trim());
+        if (commentId) {
+          setLocalCommentCount(prev => prev + 1);
+          setComment('');
+        }
+      } catch (error) {
+        console.error('Error adding comment:', error);
+      }
     }
     setShowCommentInput(false);
   };
@@ -54,7 +71,7 @@ export default function Post({ postInfo }) {
 
   const handleUserPress = () => {
     navigation.navigate('UserProfile', {
-      userId: id,
+      userId: postInfo.userId || id,
       userName: userName,
       userImage: userImage,
       isOwnProfile: false,
@@ -110,7 +127,7 @@ export default function Post({ postInfo }) {
             )}
           </View>
           <Text style={{ fontSize: 13, color: '#666666' }}>
-            {datePosted} {isGenerated ? '• Generated' : '• Human'} {isEdited && '• Edited'}
+            {datePosted} {isGenerated ? '• Generated' : '• Human'}
           </Text>
         </View>
       </View>
@@ -139,7 +156,7 @@ export default function Post({ postInfo }) {
             color: isLiked ? '#6200ee' : '#666666'
           }}
           iconRight
-          title={likeCount.toString()}
+          title={localLikeCount.toString()}
           titleStyle={{ fontSize: 14, color: isLiked ? '#6200ee' : '#666666', marginRight: 4 }}
           onPress={(e) => {
             e.stopPropagation();
@@ -155,7 +172,7 @@ export default function Post({ postInfo }) {
             color: '#666666'
           }}
           iconRight
-          title={commentCount.toString()}
+          title={localCommentCount.toString()}
           titleStyle={{ fontSize: 14, color: '#666666', marginRight: 4 }}
           onPress={(e) => {
             e.stopPropagation();

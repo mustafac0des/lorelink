@@ -1,32 +1,47 @@
 import React, { useState, useEffect } from 'react';
 import { ScrollView, View, RefreshControl } from 'react-native';
 import { Text } from '@rneui/themed';
-import Post from '../../components/home/Posts';
+import HomePost from './HomePost';
 import { fetchPosts } from '../../functions/postService';
-import { Button } from '@rneui/base';
-import { auth, db } from '../../../firebaseConfig';
 
-export default function HomeScreen() {
+export default function Home () {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-
-  
-
-const loadPosts = async () => {
-    const response = await fetchPosts();
-    setPosts(response);
-    setLoading(false);
-    setRefreshing(false);
-  };
+  const [error, setError] = useState(null);
 
   useEffect(() => {
+    let unsubscribe;
+
+    const loadPosts = async () => {
+      try {
+        setError(null);
+        unsubscribe = await fetchPosts((updatedPosts) => {
+          setPosts(updatedPosts);
+          setLoading(false);
+          setRefreshing(false);
+        });
+      } catch (err) {
+        console.error('Error loading posts:', err);
+        setError('Failed to load posts. Please try again.');
+        setLoading(false);
+        setRefreshing(false);
+      }
+    };
+
     loadPosts();
+
+    return () => {
+      if (unsubscribe) {
+        unsubscribe();
+      }
+    };
   }, []);
 
   const onRefresh = React.useCallback(() => {
     setRefreshing(true);
-    loadPosts();
+    setError(null);
+    // The real-time listener will automatically update the posts
   }, []);
 
   if (loading) {
@@ -43,26 +58,6 @@ const loadPosts = async () => {
     );
   }
 
-  const func = async () => {
-    console.log("clicked");
-    const { email } = auth.currentUser;
-    const data = () => {
-      return {
-        username: email.split('@')[0],
-        email: email,
-        biography: "Hey There, I am using Lorelink!",
-        followers: [],
-        followings: [],
-        name: "null",
-        picture: "null"
-      };
-    };
-
-    await setDoc(doc(db, 'users', auth.currentUser.uid), data());
-    ToastAndroid.show('Signed up successfully!', ToastAndroid.SHORT);
-    console.log("UID:", auth.currentUser.uid);
-  }
-
   return (
     <ScrollView 
       style={{ flex: 1, backgroundColor: '#ffffff', borderRadius: 10, overflow: 'hidden', backgroundColor: '#f8f8f8' }}
@@ -76,7 +71,7 @@ const loadPosts = async () => {
       }
     >
       {posts.map((postInfo) => (
-        <Post key={postInfo.id} postInfo={postInfo} />
+        <HomePost key={postInfo.pid} postInfo={postInfo} />
       ))}
       {posts.length === 0 ? (
         <View style={{ padding: 20, alignItems: 'center' }}>
@@ -85,7 +80,6 @@ const loadPosts = async () => {
       ) : (
         <View style={{ padding: 20, alignItems: 'center' }}>
           <Text style={{ color: '#666', fontSize: 16 }}>You've reached the end!</Text>
-          <Button onPress={func} >click mee</Button>
         </View>
       )}
     </ScrollView>

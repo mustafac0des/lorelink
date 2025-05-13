@@ -2,9 +2,9 @@ import { useState } from 'react';
 import { View } from 'react-native';
 import { Input, Button, Text, Icon } from '@rneui/themed';
 
-import { handleSignUp } from '../../functions/userService'
+import { handleSignUp } from '../functions/userService'
 
-export default function SignUpScreen({ navigation }) {
+export default function SignUp ({ navigation }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');

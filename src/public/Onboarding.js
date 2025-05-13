@@ -20,7 +20,7 @@ const onboardingSteps = [
   },
 ];
 
-export default function OnboardingScreen({ navigation }) {
+export default function Onboarding({ navigation }) {
   const [currentStep, setCurrentStep] = useState(0);
 
   const handleStep = (count) => {

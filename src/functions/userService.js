@@ -1,7 +1,6 @@
-import { signInWithEmailAndPassword } from 'firebase/auth';
-import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from 'firebase/auth';
 
-import { doc, setDoc } from 'firebase/firestore';
+import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { auth, db } from '../../firebaseConfig';
 
 import { ToastAndroid } from "react-native";
@@ -34,10 +33,10 @@ export const handleSignUp = async (email, password, confirmPassword) => {
         };
       };
 
-      await setDoc(doc(db, 'users', auth.currentUser.uid), data());
+      if (auth.currentUser) {
+        await setDoc(doc(db, 'users', auth.currentUser.uid), data());
+      }
       ToastAndroid.show('Signed up successfully!', ToastAndroid.SHORT);
-      console.log("UID:", auth.currentUser.uid);
-      navigation.navigate('SignIn');
     } catch (err) {
       ToastAndroid.show(err.message, ToastAndroid.SHORT);
     }
@@ -52,6 +51,27 @@ export const handleSignIn = async (email, password) => {
   try {
     await signInWithEmailAndPassword(auth, email, password);
     ToastAndroid.show('Signed in successfully!', ToastAndroid.SHORT);
+  } catch (err) {
+    ToastAndroid.show(err.message, ToastAndroid.SHORT);
+  }
+};
+
+export const getProfile = async (uid) => {
+  const docRef = doc(db, 'users', uid);
+  const docSnap = await getDoc(docRef);
+
+  if (docSnap.exists()) {
+    return docSnap.data();
+  } else {
+    return null;
+  }
+};
+
+export const handleSignOut = async (navigation) => {
+  try {
+    await signOut(auth);
+    ToastAndroid.show('Signed out successfully!', ToastAndroid.SHORT);
+    navigation.navigate('SignIn');
   } catch (err) {
     ToastAndroid.show(err.message, ToastAndroid.SHORT);
   }
