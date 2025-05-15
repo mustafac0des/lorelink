@@ -4,17 +4,17 @@ import Profile from './Profile';
 import Edit from './Edit';
 import { auth } from '../../../firebaseConfig';
 
-export const ProfileStack = createNativeStackNavigator();
+const Stack = createNativeStackNavigator();
 
-export function ProfileStackScreen() {
+export function ProfileStack() {
   return (
-    <ProfileStack.Navigator
+    <Stack.Navigator
       screenOptions={{
         headerStyle: { backgroundColor: '#6200ee' },
         headerTintColor: '#fff',
       }}
     >
-      <ProfileStack.Screen 
+      <Stack.Screen 
         name="ProfileMain" 
         options={{ title: 'Profile' }}
       >
@@ -30,21 +30,19 @@ export function ProfileStackScreen() {
             }}
           />
         )}
-      </ProfileStack.Screen>
+      </Stack.Screen>
       
-      <ProfileStack.Screen 
-        name="Profile" 
+      <Stack.Screen 
+        name="UserProfile" 
         component={Profile}
-        options={({ route }) => ({ 
-          title: route.params?.userName || 'User Profile'
-        })}
+        options={{ title: 'Profile' }}
       />
       
-      <ProfileStack.Screen 
+      <Stack.Screen 
         name="Edit" 
         component={Edit}
         options={{ title: 'Edit Profile' }}
       />
-    </ProfileStack.Navigator>
+    </Stack.Navigator>
   );
 }

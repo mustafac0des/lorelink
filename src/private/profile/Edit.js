@@ -59,7 +59,6 @@ export default function EditProfileScreen({ navigation }) {
       });
       
       if (!result.canceled) {
-        // Store both URI for display and base64 for storage
         const imageUri = result.assets[0].uri;
         const imageBase64 = `data:image/jpeg;base64,${result.assets[0].base64}`;
         setProfileImage({ uri: imageUri, base64: imageBase64 });
@@ -68,8 +67,6 @@ export default function EditProfileScreen({ navigation }) {
       ToastAndroid.show('Error selecting image', ToastAndroid.SHORT);
     }
   };
-  
-  // No need for a separate upload function since we're storing base64 directly
   
   const updateProfile = async () => {
     try {
@@ -81,21 +78,17 @@ export default function EditProfileScreen({ navigation }) {
         return;
       }
       
-      // Determine what to store in Firestore
       let imageData = 'null';
       
       if (profileImage) {
-        // If it's an object with base64, use that
         if (typeof profileImage === 'object' && profileImage.base64) {
           imageData = profileImage.base64;
         } 
-        // If it's a string (from previous data load), use as is
         else if (typeof profileImage === 'string') {
           imageData = profileImage;
         }
       }
       
-      // Update Firestore document
       const userDocRef = doc(db, 'users', currentUser.uid);
       await updateDoc(userDocRef, {
         name: name || 'null',
@@ -115,7 +108,6 @@ export default function EditProfileScreen({ navigation }) {
   const updateUserPassword = async () => {
     setPasswordError('');
     
-    // Validate passwords
     if (!currentPassword) {
       setPasswordError('Current password is required');
       return;
@@ -134,19 +126,14 @@ export default function EditProfileScreen({ navigation }) {
     try {
       setLoading(true);
       const currentUser = auth.currentUser;
-      
-      // Re-authenticate user
       const credential = EmailAuthProvider.credential(
         currentUser.email,
         currentPassword
       );
       
       await reauthenticateWithCredential(currentUser, credential);
-      
-      // Update password
       await updatePassword(currentUser, newPassword);
       
-      // Clear password fields
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
@@ -173,11 +160,7 @@ export default function EditProfileScreen({ navigation }) {
   }
   
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.header}>
-        <Text h4>Edit Profile</Text>
-      </View>
-      
+    <ScrollView style={styles.container}>      
       <View style={styles.imageContainer}>
         <Avatar
           size={100}

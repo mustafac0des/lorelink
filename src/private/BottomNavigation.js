@@ -4,7 +4,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 
 import { HomeStack } from './home/HomeStack';
 import Compose from './compose/Compose';
-import { ProfileStackScreen } from './profile/ProfileStack';
+import { ProfileStack } from './profile/ProfileStack';
 
 const Tab = createBottomTabNavigator();
 
@@ -15,8 +15,8 @@ export function BottomTabs() {
         tabBarIcon: ({ color, size }) => (
           <Icon
             name={
-              route.name === 'HomeTab' ? 'home' :
-              route.name === 'Write' ? 'plus' :
+              route.name === 'Home' ? 'home' :
+              route.name === 'Compose' ? 'plus' :
               'account'
             }
             type="material-community"
@@ -32,17 +32,17 @@ export function BottomTabs() {
       })}
     >
       <Tab.Screen 
-        name="HomeTab"
+        name="Home"
         component={HomeStack}
         options={{ headerShown: true, headerTitle: 'Lorelink', headerTitleAlign: 'center' }}
       />
       <Tab.Screen 
-        name="Write"
+        name="Compose"
         component={Compose}
       />
       <Tab.Screen 
         name="Profile"
-        component={ProfileStackScreen}
+        component={ProfileStack}
         options={{ headerShown: false }}
       />
     </Tab.Navigator>

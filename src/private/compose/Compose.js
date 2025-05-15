@@ -1,97 +1,147 @@
-import React, { useState, useMemo } from 'react';
-import { View, ScrollView } from 'react-native';
-import { Text, Input, Switch, Icon } from '@rneui/themed';
-import { createPost } from '../../functions/postService'; // Import the createPost function
+import React, { useState } from 'react';
+import { View, ScrollView, KeyboardAvoidingView, Platform, StyleSheet } from 'react-native';
+import { Text, Input, Icon } from '@rneui/themed';
 
 const themeColor = '#6200ee';
 
 export default function Compose() {
-  const [mode, setMode] = useState('human');
   const [messages, setMessages] = useState([
-    { id: 1, text: 'Welcome to chat!', sender: 'bot', mode: 'ai' },
+    { id: 1, text: 'Welcome! I\'m your AI writing assistant. How can I help you today?', sender: 'bot' },
   ]);
   const [draft, setDraft] = useState('');
-  const [editingId, setEditingId] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  const filtered = useMemo(
-    () => messages.filter(m => m.mode === mode),
-    [messages, mode]
-  );
+  const handleSend = async () => {
+    if (!draft.trim()) return;
 
-  const handlePostMessage = async (msgId) => {
-    const message = messages.find(msg => msg.id === msgId);
-    
-    if (message) {
-      // Create post in Firebase
-      await createPost({
-        postText: message.text,
-        isGenerated: mode === 'ai', // If it's AI-generated, set isGenerated to true
-        isEdited: editingId === msgId, // Check if the message is being edited
-      });
-      
-      // You can also add any logic to update the messages or UI if needed.
+    const newMessage = {
+      id: Date.now(),
+      text: draft.trim(),
+      sender: 'user',
+    };
+
+    setMessages(prev => [...prev, newMessage]);
+    setDraft('');
+    setLoading(true);
+
+    try {
+      setTimeout(() => {
+        const aiResponse = {
+          id: Date.now(),
+          text: 'This is a simulated AI response. In the future, this will be replaced with actual AI-generated content.',
+          sender: 'bot',
+        };
+        setMessages(prev => [...prev, aiResponse]);
+        setLoading(false);
+      }, 1000);
+    } catch (error) {
+      console.error('Error:', error);
+      setLoading(false);
     }
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#f0f0f0' }}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
-        <Text>Human</Text>
-        <Switch
-          value={mode === 'ai'}
-          onValueChange={() => {
-            setMode(m => m === 'human' ? 'ai' : 'human');
-            setDraft('');
-            setEditingId(null);
-          }}
-          color={themeColor}
-        />
-        <Text>AI</Text>
-      </View>
-      <ScrollView contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 16 }}>
-        {filtered.map(msg => (
-          <View key={msg.id} style={{
-            marginVertical: 8,
-            maxWidth: '75%',
-            alignSelf: msg.sender === 'user' ? 'flex-end' : 'flex-start'
-          }}>
-            <View style={{
-              padding: 12,
-              borderRadius: 12,
-              backgroundColor: msg.sender === 'user' ? themeColor : '#fff',
-            }}>
-              <Text style={{ color: msg.sender === 'user' ? '#fff' : '#000' }}>{msg.text}</Text>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={styles.container}
+    >
+      <ScrollView contentContainerStyle={styles.scrollContainer} style={styles.scroll}>
+        {messages.map(msg => (
+          <View
+            key={msg.id}
+            style={[
+              styles.messageContainer,
+              msg.sender === 'user' ? styles.userAlign : styles.botAlign
+            ]}
+          >
+            <View
+              style={[
+                styles.messageBubble,
+                msg.sender === 'user' ? styles.userBubble : styles.botBubble
+              ]}
+            >
+              <Text style={msg.sender === 'user' ? styles.userText : styles.botText}>
+                {msg.text}
+              </Text>
             </View>
-            {((mode === 'human' && msg.sender === 'user') || (mode === 'ai' && msg.sender === 'bot')) && (
-              <View style={{ flexDirection: 'row', justifyContent: 'flex-end', marginTop: 4 }}>
-                <Icon name='edit' type='material' color={themeColor} onPress={() => handleEdit(msg, setDraft, setEditingId)} />
-                <Icon name='send' type='material' color={themeColor} onPress={() => handlePostMessage(msg.id)} />
-              </View>
-            )}
           </View>
         ))}
       </ScrollView>
-      <View style={{ flexDirection: 'row', padding: 8, borderTopWidth: 1, borderColor: '#ddd', backgroundColor: '#fff' }}>
+
+      <View style={styles.inputWrapper}>
         <Input
-          placeholder={mode === 'human' ? 'Type message...' : 'Type prompt...'}
+          placeholder="Message LoreLink AI..."
           value={draft}
           onChangeText={setDraft}
-          inputContainerStyle={{
-            borderBottomWidth: 0,
-            backgroundColor: '#fff',
-            borderRadius: 24,
-            paddingHorizontal: 12,
-            flex: 1,
-            marginRight: 8,
-          }}
+          multiline
+          inputContainerStyle={styles.inputContainer}
           rightIcon={
-            editingId
-              ? <Icon name='save' type='material' color='#fff' onPress={() => handleUpdate({ draft, editingId, setDraft, setEditingId })} />
-              : <Icon name={loading ? 'hourglass-empty' : 'north'} type='material' color={themeColor} onPress={() => handleSend({ draft, mode, setMessages, setDraft, setEditingId, setLoading })} />
+            <Icon
+              name={loading ? 'hourglass-empty' : 'send'}
+              type="material"
+              color={draft.trim() ? themeColor : '#ccc'}
+              onPress={handleSend}
+              disabled={loading || !draft.trim()}
+            />
           }
         />
       </View>
-    </View>
+    </KeyboardAvoidingView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#ffffff',
+  },
+  scrollContainer: {
+    padding: 16,
+  },
+  scroll: {
+    flex: 1,
+  },
+  messageContainer: {
+    marginVertical: 8,
+    maxWidth: '80%',
+  },
+  userAlign: {
+    alignSelf: 'flex-end',
+  },
+  botAlign: {
+    alignSelf: 'flex-start',
+  },
+  messageBubble: {
+    padding: 12,
+    borderRadius: 20,
+  },
+  userBubble: {
+    backgroundColor: themeColor,
+    borderBottomRightRadius: 4,
+  },
+  botBubble: {
+    backgroundColor: '#f0f0f0',
+    borderBottomLeftRadius: 4,
+  },
+  userText: {
+    color: '#fff',
+  },
+  botText: {
+    color: '#000',
+  },
+  inputWrapper: {
+    padding: 16,
+    borderTopWidth: 1,
+    borderColor: '#e0e0e0',
+    backgroundColor: '#fff',
+  },
+  inputContainer: {
+    borderBottomWidth: 0,
+    backgroundColor: '#f0f0f0',
+    borderRadius: 24,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    minHeight: 48,
+    maxHeight: 100,
+  },
+});

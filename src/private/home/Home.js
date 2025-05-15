@@ -1,66 +1,60 @@
-import React, { useState, useEffect } from 'react';
-import { ScrollView, View, RefreshControl } from 'react-native';
+import React, { useState, useEffect, useCallback } from 'react';
+import { ScrollView, View, RefreshControl, ActivityIndicator, ToastAndroid } from 'react-native';
 import { Text } from '@rneui/themed';
-import HomePost from './HomePost';
-import { fetchPosts } from '../../functions/postService';
 
-export default function Home () {
+import PostComponent from './PostComponent'; 
+import { getHomePosts } from '../../functions/dummyServices'; 
+
+export default function Home() {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [error, setError] = useState(null);
+
+  const loadPosts = () => {
+    try {
+      const dummyData = getHomePosts();
+      setPosts(dummyData);
+    } catch (err) {
+      console.error('Error loading dummy posts:', err);
+      ToastAndroid.show('Failed to load posts', ToastAndroid.SHORT);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
 
   useEffect(() => {
-    let unsubscribe;
-
-    const loadPosts = async () => {
-      try {
-        setError(null);
-        unsubscribe = await fetchPosts((updatedPosts) => {
-          setPosts(updatedPosts);
-          setLoading(false);
-          setRefreshing(false);
-        });
-      } catch (err) {
-        console.error('Error loading posts:', err);
-        setError('Failed to load posts. Please try again.');
-        setLoading(false);
-        setRefreshing(false);
-      }
-    };
-
     loadPosts();
-
-    return () => {
-      if (unsubscribe) {
-        unsubscribe();
-      }
-    };
   }, []);
 
-  const onRefresh = React.useCallback(() => {
+  const onRefresh = useCallback(() => {
     setRefreshing(true);
-    setError(null);
-    // The real-time listener will automatically update the posts
+    loadPosts();
   }, []);
 
   if (loading) {
     return (
-      <View style={{ 
-        flex: 1, 
-        justifyContent: 'center', 
-        alignItems: 'center', 
+      <View style={{
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
         backgroundColor: '#ffffff',
         paddingTop: 20
       }}>
-        <Text h4>Loading stories...</Text>
+        <ActivityIndicator size="large" color="#6200ee" />
+        <Text style={{ marginTop: 10, color: '#666' }}>Loading stories...</Text>
       </View>
     );
   }
 
   return (
-    <ScrollView 
-      style={{ flex: 1, backgroundColor: '#ffffff', borderRadius: 10, overflow: 'hidden', backgroundColor: '#f8f8f8' }}
+    <ScrollView
+      style={{
+        flex: 1,
+        backgroundColor: '#f8f8f8',
+        borderRadius: 10,
+        overflow: 'hidden'
+      }}
       contentContainerStyle={{ paddingVertical: 8 }}
       refreshControl={
         <RefreshControl
@@ -71,7 +65,7 @@ export default function Home () {
       }
     >
       {posts.map((postInfo) => (
-        <HomePost key={postInfo.pid} postInfo={postInfo} />
+        <PostComponent key={postInfo.pid} postInfo={postInfo} />
       ))}
       {posts.length === 0 ? (
         <View style={{ padding: 20, alignItems: 'center' }}>
