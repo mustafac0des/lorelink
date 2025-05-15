@@ -151,7 +151,7 @@ export default function ProfileScreen({ route, navigation }) {
           tabBarLabelStyle: { fontSize: 14, textTransform: 'none' },
           tabBarIndicatorStyle: { backgroundColor: '#6200ee' },
         }}
-      >s
+      >
         <Tab.Screen 
           name="Posts" 
           options={{ tabBarLabel: 'Posts' }}
