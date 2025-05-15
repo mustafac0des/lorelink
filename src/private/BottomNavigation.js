@@ -24,17 +24,13 @@ export function BottomTabs() {
             color={color}
           />
         ),
-        tabBarActiveBackgroundColor: '#f7e3ff',
-        tabBarActiveTintColor: '#6200ee',
-        tabBarInactiveTintColor: '#757575',
-        headerStyle: { backgroundColor: '#6200ee' },
-        headerTintColor: '#fff',
+        ...tabStyles.screenOptions,
       })}
     >
       <Tab.Screen 
         name="Home"
         component={HomeStack}
-        options={{ headerShown: true, headerTitle: 'Lorelink', headerTitleAlign: 'center' }}
+        options={tabStyles.homeOptions}
       />
       <Tab.Screen 
         name="Compose"
@@ -43,8 +39,26 @@ export function BottomTabs() {
       <Tab.Screen 
         name="Profile"
         component={ProfileStack}
-        options={{ headerShown: false }}
+        options={tabStyles.profileOptions}
       />
     </Tab.Navigator>
   );
 }
+
+const tabStyles = {
+  screenOptions: {
+    tabBarActiveBackgroundColor: '#f7e3ff',
+    tabBarActiveTintColor: '#6200ee',
+    tabBarInactiveTintColor: '#757575',
+    headerStyle: { backgroundColor: '#6200ee' },
+    headerTintColor: '#fff',
+  },
+  homeOptions: {
+    headerShown: true,
+    headerTitle: 'Lorelink',
+    headerTitleAlign: 'center',
+  },
+  profileOptions: {
+    headerShown: false,
+  },
+};

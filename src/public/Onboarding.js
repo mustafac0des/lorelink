@@ -23,16 +23,14 @@ const onboardingSteps = [
 export default function Onboarding({ navigation }) {
   const [currentStep, setCurrentStep] = useState(0);
 
-  const handleStep = (count) => {
-    return () => {
-      const newStep = currentStep + count;
-      if (newStep >= 0 && newStep < onboardingSteps.length) {
-        setCurrentStep(newStep);
-      } else {
-        navigation.navigate('SignIn');
-      }
-    };
-  };
+  const handleStep = (count) => async () => {
+    const newStep = currentStep + count;
+    if (newStep >= 0 && newStep < onboardingSteps.length) {
+      setCurrentStep(newStep);
+    } else {
+      navigation.replace('SignIn');
+    }
+  };  
 
   return (
     <View style={{ flex: 1, backgroundColor: '#ffffff' }}>

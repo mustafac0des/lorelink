@@ -13,22 +13,26 @@ export default function PostScreen({ route }) {
   const [postInfo, setPostInfo] = useState(null);
   const [comments, setComments] = useState([]);
   const [liked, setLiked] = useState(false);
+  const [localLikeCount, setLocalLikeCount] = useState(0);
   const [commentText, setCommentText] = useState('');
 
   const toggleLiked = () => {
     setLiked(prev => !prev);
+    setLocalLikeCount(prev => liked ? prev - 1 : prev + 1);
   }
 
   useEffect(() => {
     const info = getPost(pid);
     setPostInfo(info);
     setComments(info?.comments || []);
+    setLocalLikeCount(info?.likeCount || 0);
   }, [pid]);
 
   const handleUserPress = (userInfo) => {
     navigation.navigate('Profile', {
-      userId: userInfo.uid,
-      isOwnProfile: false
+      userId: postInfo.userId,
+      dummyId: postInfo.uid,
+      isOwnProfile: false,
     });
   };
 
@@ -72,11 +76,16 @@ export default function PostScreen({ route }) {
         <View style={styles.actionContainer}>
           <Button
             type="clear"
-            icon={{ name: liked? 'heart': 'heart-outline', type: 'material-community', size: 20 }}
+            icon={{
+              name: liked ? 'heart' : 'heart-outline',
+              type: 'material-community',
+              size: 20,
+              color: liked ? '#6200ee' : '#666666'
+            }}
             iconRight
-            title={postInfo.likeCount.toString()}
-            titleStyle={styles.actionText}
-            onPress={() => toggleLiked}
+            title={localLikeCount.toString()}
+            titleStyle={[styles.actionText, { color: liked ? '#6200ee' : '#666666' }]}
+            onPress={toggleLiked}
           />
           <Button
             type="clear"
@@ -115,7 +124,7 @@ export default function PostScreen({ route }) {
           placeholder="Write a comment..."
           value={commentText}
           onChangeText={setCommentText}
-          rightIcon={<Icon name="send" type="material-community" size={24} onPress={handleComment} />}
+          rightIcon={<Icon name="send" color={"#6200ee"} type="material-community" size={24} onPress={handleComment} />}
           inputContainerStyle={styles.inputContainer}
         />
       </View>
@@ -124,23 +133,110 @@ export default function PostScreen({ route }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff', margin: 10, shadowColor: '#6200ee', shadowOpacity: 0.08, shadowRadius: 5, elevation: 5 },
-  headerContainer: { flexDirection: 'row', alignItems: 'center', padding: 16, borderBottomWidth: 1, borderColor: '#f0f0f0' },
-  avatar: { borderRadius: 50, borderWidth: 1, borderColor: '#6200ee', borderWidth: 2, },
-  headerTextContainer: { marginLeft: 12, flex: 1 },
-  userName: { fontSize: 16, fontWeight: '600', color: '#000' },
-  datePosted: { fontSize: 13, color: '#666', marginTop: 4 },
-  postText: { fontSize: 15, lineHeight: 20, color: '#000', paddingHorizontal: 16, paddingVertical: 10, marginTop: 8 },
-  actionContainer: { flexDirection: 'row', paddingVertical: 8, paddingHorizontal: 16, borderTopWidth: 1, borderBottomWidth: 1, borderColor: '#f0f0f0' },
-  actionText: { fontSize: 14, color: '#666', marginLeft: 4 },
-  commentsContainer: { padding: 16 },
-  commentsHeader: { fontSize: 16, fontWeight: '600', marginBottom: 16 },
-  commentItem: { flexDirection: 'row', marginBottom: 16, alignItems: 'center', borderBottomWidth: 0.5, borderColor: '#f0f0f0', paddingBottom: 16 },
-  commentTextContainer: { marginLeft: 12, flex: 1 },
-  commentHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 4 },
-  commentUserName: { fontSize: 14, fontWeight: '600' },
-  commentTimestamp: { fontSize: 12, color: '#666', marginLeft: 8 },
-  commentText: { fontSize: 14, color: '#000' },
-  addCommentContainer: { padding: 16, backgroundColor: '#edd7fc', borderTopWidth: 1, borderColor: '#6200ee' },
-  inputContainer: { borderBottomWidth: 0 },
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    margin: 10,
+    overflow: 'hidden',
+    shadowColor: '#6200ee',
+    shadowOpacity: 0.08,
+    shadowRadius: 5,
+    elevation: 5,
+  },
+  headerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    borderBottomWidth: 1,
+    borderColor: '#f0f0f0',
+  },
+  avatar: {
+    borderRadius: 50,
+    borderWidth: 2,
+    borderColor: '#6200ee',
+  },
+  headerTextContainer: {
+    marginLeft: 12,
+    flex: 1,
+  },
+  userName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#000',
+  },
+  datePosted: {
+    fontSize: 13,
+    color: '#666',
+    marginTop: 4,
+  },
+  postText: {
+    fontSize: 15,
+    lineHeight: 20,
+    color: '#000',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    marginTop: 8,
+  },
+  actionContainer: {
+    flexDirection: 'row',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderTopWidth: 1,
+    borderBottomWidth: 1,
+    borderColor: '#f0f0f0',
+  },
+  actionText: {
+    fontSize: 14,
+    color: '#666',
+    marginLeft: 4,
+  },
+  commentsContainer: {
+    padding: 16,
+  },
+  commentsHeader: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 16,
+  },
+  commentItem: {
+    flexDirection: 'row',
+    marginBottom: 16,
+    alignItems: 'center',
+    borderBottomWidth: 0.5,
+    borderColor: '#f0f0f0',
+    paddingBottom: 16,
+  },
+  commentTextContainer: {
+    marginLeft: 12,
+    flex: 1,
+  },
+  commentHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  commentUserName: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  commentTimestamp: {
+    fontSize: 12,
+    color: '#666',
+    marginLeft: 8,
+  },
+  commentText: {
+    fontSize: 14,
+    color: '#000',
+  },
+  addCommentContainer: {
+    padding: 16,
+    backgroundColor: '#f0f0f0',
+    borderTopWidth: 1,
+    borderColor: '#f7e3ff',
+  },
+  inputContainer: {
+    borderBottomWidth: 0,
+  },
 });
+

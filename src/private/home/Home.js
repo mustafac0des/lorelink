@@ -1,61 +1,75 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { ScrollView, View, RefreshControl, ActivityIndicator, ToastAndroid } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { ScrollView, StyleSheet, View, RefreshControl, ActivityIndicator, ToastAndroid } from 'react-native';
 import { Text } from '@rneui/themed';
+import PostComponent from './PostComponent';
 
-import PostComponent from './PostComponent'; 
-import { getHomePosts } from '../../functions/dummyServices'; 
+import { DUMMY_POSTS, DUMMY_USERS } from '../../functions/dummyServices';
 
-export default function Home() {
+export default function Home () {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  const loadPosts = () => {
-    try {
-      const dummyData = getHomePosts();
-      setPosts(dummyData);
-    } catch (err) {
-      console.error('Error loading dummy posts:', err);
-      ToastAndroid.show('Failed to load posts', ToastAndroid.SHORT);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  };
-
   useEffect(() => {
-    loadPosts();
+    const loadPosts = () => {
+      try {
+        const postsWithUserData = DUMMY_POSTS.map(post => {
+          const userData = DUMMY_USERS.find(user => user.uid === post.uid);
+          return {
+            ...post,
+            userImage: userData?.picture || 'https://static.vecteezy.com/system/resources/previews/009/292/244/non_2x/default-avatar-icon-of-social-media-user-vector.jpg',
+            userName: userData?.name,
+            isFollowed: userData?.isFollowed || false,
+            likeCount: Object.keys(post.likes || {}).length,
+            commentCount: (post.comments || []).length
+          };
+        });
+
+        setPosts(postsWithUserData);
+        setLoading(false);
+        setRefreshing(false);
+      } catch (err) {
+        ToastAndroid.show(err.message, ToastAndroid.SHORT);
+        setLoading(false);
+        setRefreshing(false);
+      }
+    };
+
+    setTimeout(loadPosts, 1000);
   }, []);
 
-  const onRefresh = useCallback(() => {
+  const onRefresh = React.useCallback(() => {
     setRefreshing(true);
-    loadPosts();
+    setTimeout(() => {
+      const postsWithUserData = DUMMY_POSTS.map(post => {
+        const userData = DUMMY_USERS.find(user => user.uid === post.uid);
+        return {
+          ...post,
+          userImage: userData?.picture || 'https://static.vecteezy.com/system/resources/previews/009/292/244/non_2x/default-avatar-icon-of-social-media-user-vector.jpg',
+          userName: userData?.name,
+          isFollowed: userData?.isFollowed,
+          likeCount: Object.keys(post.likes || {}).length,
+          commentCount: (post.comments || []).length
+        };
+      });
+      setPosts(postsWithUserData);
+      setRefreshing(false);
+    }, 1000); 
   }, []);
 
   if (loading) {
     return (
-      <View style={{
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: '#ffffff',
-        paddingTop: 20
-      }}>
+      <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#6200ee" />
-        <Text style={{ marginTop: 10, color: '#666' }}>Loading stories...</Text>
+        <Text style={styles.loadingText}>Loading stories...</Text>
       </View>
     );
   }
 
   return (
-    <ScrollView
-      style={{
-        flex: 1,
-        backgroundColor: '#f8f8f8',
-        borderRadius: 10,
-        overflow: 'hidden'
-      }}
-      contentContainerStyle={{ paddingVertical: 8 }}
+    <ScrollView 
+      style={styles.scrollView}
+      contentContainerStyle={styles.scrollViewContent}
       refreshControl={
         <RefreshControl
           refreshing={refreshing}
@@ -68,14 +82,50 @@ export default function Home() {
         <PostComponent key={postInfo.pid} postInfo={postInfo} />
       ))}
       {posts.length === 0 ? (
-        <View style={{ padding: 20, alignItems: 'center' }}>
-          <Text style={{ color: '#666', fontSize: 16 }}>No stories to show!</Text>
+        <View style={styles.messageContainer}>
+          <Text style={styles.messageText}>No stories to show!</Text>
         </View>
       ) : (
-        <View style={{ padding: 20, alignItems: 'center' }}>
-          <Text style={{ color: '#666', fontSize: 16 }}>You've reached the end!</Text>
+        <View style={styles.messageContainer}>
+          <Text style={styles.messageText}>You've reached the end!</Text>
         </View>
       )}
     </ScrollView>
   );
 }
+
+const styles = StyleSheet.create({
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#ffffff',
+    paddingTop: 20
+  },
+  loadingText: {
+    marginTop: 10,
+    color: '#666'
+  },
+  scrollView: {
+    flex: 1,
+    backgroundColor: '#f7e3ff',
+    borderRadius: 20,
+    margin: 10,
+    overflow: 'hidden',
+    shadowColor: '#6200ee',
+    shadowOpacity: 0.08,
+    shadowRadius: 5,
+    elevation: 5,
+  },
+  scrollViewContent: {
+    paddingVertical: 8
+  },
+  messageContainer: {
+    padding: 20,
+    alignItems: 'center'
+  },
+  messageText: {
+    color: '#666',
+    fontSize: 16
+  }
+});

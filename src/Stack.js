@@ -1,14 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { onAuthStateChanged } from 'firebase/auth';
+import { auth } from '../firebaseConfig';
 
 import Onboarding from './public/Onboarding';
 import SignIn from './public/SignIn';
 import SignUp from './public/SignUp';
-import Home from './private/home/Home';
 import { BottomTabs } from './private/BottomNavigation';
 import EditProfileScreen from './private/profile/Edit';
-import { auth } from '../firebaseConfig';
-import { onAuthStateChanged } from 'firebase/auth';
 
 const Stack = createNativeStackNavigator();
 
@@ -30,34 +29,14 @@ export default function Main() {
     >
         {!user ? (
         <>
-            <Stack.Screen 
-            name="Onboarding" 
-            component={Onboarding}
-            options={{ headerShown: false }}
-            />
-            <Stack.Screen 
-            name="SignIn" 
-            component={SignIn}
-            options={{ title: 'Sign In' }}
-            />
-            <Stack.Screen 
-            name="SignUp" 
-            component={SignUp}
-            options={{ title: 'Sign Up' }}
-            />
+            <Stack.Screen name="Onboarding" component={Onboarding}/>
+            <Stack.Screen name="SignIn" component={SignIn}/>
+            <Stack.Screen name="SignUp" component={SignUp}/>
         </>
         ) : (
         <>
-            <Stack.Screen 
-            name="Home"
-            component={BottomTabs}
-            options={{ headerShown: true }}
-            />
-            <Stack.Screen 
-            name="Edit"
-            component={EditProfileScreen}
-            options={{ title: 'Edit Profile' }}
-            />
+            <Stack.Screen name="Home"component={BottomTabs}options={{ headerShown: true }}/>
+            <Stack.Screen name="Edit"component={EditProfileScreen}options={{ title: 'Edit Profile' }}/>
         </>
         )}
     </Stack.Navigator>

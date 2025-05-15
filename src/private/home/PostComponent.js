@@ -27,7 +27,6 @@ export default function PostComponent({ postInfo }) {
     datePosted,
     postText,
     onShare,
-    onFollow,
   } = postInfo || {};
 
   const handleLike = () => {
@@ -51,8 +50,8 @@ export default function PostComponent({ postInfo }) {
   const handleUserPress = () => {
     navigation.navigate('Profile', {
       userId: postInfo.userId,
+      dummyId: postInfo.uid,
       isOwnProfile: false,
-      dummyId: postInfo.user.uid
     });
   };
 
@@ -74,10 +73,6 @@ export default function PostComponent({ postInfo }) {
                 title="Follow"
                 titleStyle={styles.followTitle}
                 containerStyle={styles.followContainer}
-                onPress={(e) => {
-                  e.stopPropagation();
-                  onFollow?.();
-                }}
               />
             )}
           </View>
@@ -161,7 +156,6 @@ export default function PostComponent({ postInfo }) {
 
 const styles = StyleSheet.create({
   container: {
-    marginHorizontal: 12,
     padding: 16,
     backgroundColor: '#ffffff',
     shadowColor: '#6200ee',

@@ -136,21 +136,9 @@ export function CommentsTab({ userId }) {
               <Text style={styles.dateText}>{item.datePosted}</Text>
             </View>
           </View>
-          <Text style={styles.postTitle}>Commented on:</Text>
-          <Text style={styles.commentText}>{item.postText}</Text>
-          <Text style={styles.commentText}>{item.text}</Text>
-          <View style={styles.actionContainer}>
-            <Button
-              type="clear"
-              icon={{
-                name: 'heart-outline',
-                type: 'material-community',
-                size: 15,
-                color: '#666666'
-              }}
-              iconPosition='top'
-              titleStyle={styles.likeButton}
-            />
+          <View>
+            <Text style={styles.postTitle}>Commented on: <Text style={{color: '#6200ee', fontStyle: 'italic'}} italic>{item.postText}</Text></Text>
+            <Text style={styles.commentText}>{item.text}</Text>
           </View>
         </Pressable>
       )}
@@ -162,7 +150,7 @@ export function CommentsTab({ userId }) {
 
 const styles = StyleSheet.create({
   loadingContainer: {
-    flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20
+    flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20,
   },
   loadingText: { marginTop: 10 },
   errorContainer: {
@@ -173,9 +161,13 @@ const styles = StyleSheet.create({
     flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20
   },
   emptyText: { textAlign: 'center' },
-  listContainer: { paddingVertical: 8 },
+  listContainer: { margin: 10, borderRadius: 20, backgroundColor: "#f7e3ff", overflow: "hidden", 
+    shadowColor: '#6200ee',
+    shadowOpacity: 0.08,
+    shadowRadius: 5,
+    elevation: 5, },
   cardContainer: {
-    marginHorizontal: 12, marginVertical: 8, padding: 16,
+padding: 16,
     backgroundColor: '#fff', shadowColor: '#6200ee',
     shadowOpacity: 0.08, shadowRadius: 5, elevation: 5
   },
@@ -188,6 +180,5 @@ const styles = StyleSheet.create({
   commentText: {
     fontSize: 15, lineHeight: 20, color: '#000', marginBottom: 8
   },
-  actionContainer: { flexDirection: 'row' },
   likeButton: { fontSize: 14, marginRight: 4 }
 });

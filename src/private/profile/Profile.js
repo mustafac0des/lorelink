@@ -21,7 +21,7 @@ export default function ProfileScreen({ route, navigation }) {
       try {
         setLoading(true);
 
-        if (dummyId !== undefined) {
+        if (dummyId != undefined) {
           const userData = await getUserProfile(dummyId)
           setProfileData(userData);
         }
@@ -86,42 +86,29 @@ export default function ProfileScreen({ route, navigation }) {
     );
   }
 
-  const username = profileData.username || '';
-  const name = profileData.name || '';
-  const biography = profileData.biography || '';
-  const followers = profileData.followers?.length || 0;
-  const followings = profileData.followings?.length || 0;
-  const picture = profileData?.picture !== 'null' ? profileData.picture : 'https://static.vecteezy.com/system/resources/previews/009/292/244/non_2x/default-avatar-icon-of-social-media-user-vector.jpg';
-
   return (
     <View style={styles.container}>
       <View style={styles.profileSection}>
         <View style={styles.profileHeader}>
-          <View style={styles.profileInfo}>
-            <View style={styles.nameContainer}>
-              <Text h4 style={styles.displayName}>{name}</Text>
-            </View>
-            <Text style={styles.username}>@{username}</Text>
-            
+          <View style={{width: "80%"}}>
+            <Text h4>{profileData.name}</Text>
+            <Text style={styles.username}>@{profileData.username}</Text>
             <View style={styles.bioContainer}>
-              <Text style={styles.bioText}>{biography}</Text>
+              <Text style={styles.bioText}>{profileData.biography}</Text>
             </View>
-
             <TouchableOpacity style={styles.statsContainer}>
-              <Text style={styles.statsText}>{followers} followers</Text>
+              <Text style={styles.statsText}>0 followers</Text>
               <Text style={styles.statsText}>·</Text>
-              <Text style={styles.statsText}>{followings} following</Text>
+              <Text style={styles.statsText}>0 followings</Text>
             </TouchableOpacity>
           </View>
-
           <Avatar
             size={80}
             rounded
-            source={{ uri: picture }}
+            source={{uri: profileData.picture || 'https://static.vecteezy.com/system/resources/previews/009/292/244/non_2x/default-avatar-icon-of-social-media-user-vector.jpg'}}
             containerStyle={styles.avatarContainer}
           />
         </View>
-
         {isOwnProfile?
           <View style={{ flexDirection: 'row', gap: 10, marginTop: 15 }}>
             <Button
@@ -191,39 +178,26 @@ const styles = {
     flexDirection: 'row',
     justifyContent: 'space-between'
   },
-  profileInfo: {
-    flex: 1
-  },
-  nameContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5
-  },
-  displayName: {
-    marginBottom: 0
-  },
   username: {
     color: '#666',
-    marginBottom: 10
   },
   bioContainer: {
-    marginBottom: 10
+    marginVertical: 10
   },
   bioText: {
     color: '#666'
   },
   statsContainer: {
     flexDirection: 'row',
-    alignItems: 'center',
     gap: 5
   },
   statsText: {
     color: '#666'
   },
   avatarContainer: {
-    marginLeft: 15,
+    marginLeft: 0,
     borderColor: '#6200ee',
-    borderWidth: 1
+    borderWidth: 2
   },
   editButtonContainer: {
     flex: 1

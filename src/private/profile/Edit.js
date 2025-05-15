@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { View, ScrollView, StyleSheet, ToastAndroid, ActivityIndicator } from 'react-native';
 import { Text, Button, Input, Avatar } from '@rneui/themed';
 import * as ImagePicker from 'expo-image-picker';
-import { getAuth, updatePassword, EmailAuthProvider, reauthenticateWithCredential } from 'firebase/auth';
-import { doc, updateDoc, getDoc } from 'firebase/firestore';
+import { getAuth, updatePassword, EmailAuthProvider, reauthenticateWithCredential, deleteUser } from 'firebase/auth';
+import { doc, updateDoc, getDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '../../../firebaseConfig';
 
 const auth = getAuth();
@@ -249,6 +249,62 @@ export default function EditProfileScreen({ navigation }) {
           disabled={loading || !currentPassword || !newPassword || !confirmPassword}
         />
       </View>
+
+      <View style={styles.section}>
+        <Text style={[styles.sectionTitle, { color: '#d32f2f' }]}>Delete Account</Text>
+        <Text style={styles.warningText}>This action cannot be undone. All your data will be permanently deleted.</Text>
+        
+        <Input
+          label="Current Password"
+          value={currentPassword}
+          onChangeText={setCurrentPassword}
+          secureTextEntry
+          placeholder="Enter your password to confirm"
+          containerStyle={styles.inputContainer}
+          errorMessage={passwordError}
+        />
+        
+        <Button
+          title="Delete Account"
+          onPress={async () => {
+            try {
+              if (!currentPassword) {
+                setPasswordError('Password is required to delete account');
+                return;
+              }
+              
+              setLoading(true);
+              const currentUser = auth.currentUser;
+              const credential = EmailAuthProvider.credential(
+                currentUser.email,
+                currentPassword
+              );
+              
+              await reauthenticateWithCredential(currentUser, credential);
+              await deleteDoc(doc(db, 'users', currentUser.uid));
+              await deleteUser(currentUser);
+              
+              ToastAndroid.show('Account deleted successfully', ToastAndroid.SHORT);
+              navigation.reset({
+                index: 0,
+                routes: [{ name: 'SignIn' }],
+              });
+            } catch (error) {
+              if (error.code === 'auth/wrong-password') {
+                setPasswordError('Password is incorrect');
+              } else {
+                ToastAndroid.show('Error deleting account: ' + error.message, ToastAndroid.SHORT);
+              }
+            } finally {
+              setLoading(false);
+            }
+          }}
+          buttonStyle={styles.deleteButton}
+          titleStyle={styles.deleteButtonText}
+          loading={loading}
+          disabled={loading}
+        />
+      </View>
     </ScrollView>
   );
 }
@@ -303,5 +359,18 @@ const styles = StyleSheet.create({
     backgroundColor: '#6200ee',
     borderRadius: 8,
     marginTop: 10,
+  },
+  deleteButton: {
+    backgroundColor: '#d32f2f',
+    borderRadius: 8,
+    marginTop: 10,
+  },
+  deleteButtonText: {
+    color: '#fff',
+  },
+  warningText: {
+    color: '#d32f2f',
+    marginBottom: 15,
+    fontSize: 14,
   },
 });
