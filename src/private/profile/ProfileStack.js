@@ -15,8 +15,7 @@ export function ProfileStack() {
       }}
     >
       <Stack.Screen 
-        name="ProfileMain" 
-        options={{ title: 'Profile' }}
+        name="Profile"
       >
         {(props) => (
           <Profile
@@ -30,18 +29,10 @@ export function ProfileStack() {
             }}
           />
         )}
-      </Stack.Screen>
-      
-      <Stack.Screen 
-        name="UserProfile" 
-        component={Profile}
-        options={{ title: 'Profile' }}
-      />
-      
+      </Stack.Screen>      
       <Stack.Screen 
         name="Edit" 
         component={Edit}
-        options={{ title: 'Edit Profile' }}
       />
     </Stack.Navigator>
   );

@@ -99,7 +99,7 @@ export default function EditProfileScreen({ navigation }) {
       ToastAndroid.show('Profile updated successfully', ToastAndroid.SHORT);
       navigation.goBack();
     } catch (error) {
-      ToastAndroid.show('Error updating profile: ' + error.message, ToastAndroid.SHORT);
+      ToastAndroid.show('Error updating profile: ' + err.message, ToastAndroid.SHORT);
     } finally {
       setLoading(false);
     }

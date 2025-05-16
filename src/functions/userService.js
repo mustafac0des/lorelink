@@ -25,10 +25,8 @@ export const handleSignUp = async (email, password, confirmPassword) => {
         return {
           username: email.split('@')[0],
           email: email,
-          biography: "Hey There, I am using Lorelink!",
-          followers: [],
-          followings: [],
-          name: "null",
+          biography: "Hey There, I am new to Lorelink!",
+          name: "new user",
           picture: "null"
         };
       };
@@ -67,11 +65,10 @@ export const getProfile = async (uid) => {
   }
 };
 
-export const handleSignOut = async (navigation) => {
+export const handleSignOut = async () => {
   try {
     await signOut(auth);
     ToastAndroid.show('Signed out successfully!', ToastAndroid.SHORT);
-    navigation.navigate('SignIn');
   } catch (err) {
     ToastAndroid.show(err.message, ToastAndroid.SHORT);
   }

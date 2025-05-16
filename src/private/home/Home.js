@@ -19,7 +19,7 @@ export default function Home () {
             ...post,
             userImage: userData?.picture || 'https://static.vecteezy.com/system/resources/previews/009/292/244/non_2x/default-avatar-icon-of-social-media-user-vector.jpg',
             userName: userData?.name,
-            isFollowed: userData?.isFollowed || false,
+            isFollowed: userData?.isFollowed,
             likeCount: Object.keys(post.likes || {}).length,
             commentCount: (post.comments || []).length
           };

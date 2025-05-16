@@ -3,14 +3,13 @@ import {
   View,
   FlatList,
   KeyboardAvoidingView,
-  Platform,
   StyleSheet,
   TextInput,
   TouchableOpacity,
   Text,
 } from 'react-native';
 import { Icon } from '@rneui/themed';
-import { Avatar, Image } from '@rneui/base';
+import Typical from 'react-native-typical';
 
 const themeColor = '#6200ee';
 
@@ -26,28 +25,67 @@ export default function Compose() {
   const [loading, setLoading] = useState(false);
   const flatListRef = useRef(null);
 
+  const sendToGemini = async (prompt) => {
+    prompt = prompt + " /END if this typed message is a query about generating/writing a story, generate one, otherwise, generate random poem of 4 lines, depicting that the typed query is not requesting about writing a story and type that lorelink a social platform with AI powered to share and generate stories using Generative AI so ask for one instead. Don't explicitly type anything besides what I have instructed you on.";
+    const res = await fetch(
+      'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=AIzaSyDDzzVVEnKmBBQ93Md0on4fmgZQLiPn9m0',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          contents: [
+            {
+              role: 'user',
+              parts: [{ text: prompt }],
+            },
+          ],
+        }),
+      }
+    );
+  
+    const data = await res.json();
+
+    return (
+      data?.candidates?.[0]?.content?.parts?.[0]?.text ||
+      'Could not generate response.'
+    );
+  };  
+
   const handleSend = async () => {
     if (!draft.trim()) return;
 
-    const newMessage = {
+    const userMessage = {
       id: Date.now(),
       text: draft.trim(),
       sender: 'user',
     };
 
-    setMessages(prev => [...prev, newMessage]);
+    setMessages((prev) => [...prev, userMessage]);
     setDraft('');
     setLoading(true);
 
-    setTimeout(() => {
-      const aiResponse = {
-        id: Date.now(),
-        text: 'This is a simulated AI response. In the future, this will be replaced with actual AI-generated content.',
+    try {
+      const aiText = await sendToGemini(userMessage.text);
+      const aiMessage = {
+        id: Date.now() + 1,
+        text: aiText,
         sender: 'bot',
       };
-      setMessages(prev => [...prev, aiResponse]);
+      setMessages((prev) => [...prev, aiMessage]);
+    } catch (err) {
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: Date.now() + 1,
+          text: 'Failed to get response. Please try again.',
+          sender: 'bot',
+        },
+      ]);
+    } finally {
       setLoading(false);
-    }, 1000);
+    }
   };
 
   const renderMessage = ({ item }) => (
@@ -63,29 +101,28 @@ export default function Compose() {
           item.sender === 'user' ? styles.userBubble : styles.botBubble,
         ]}
       >
-        {item.sender === 'bot' && (
-          <Image
-          style={{width: 200, height: 100, borderRadius: 10}}
-          source={{uri: 'https://picsum.photos/id/237/200/300'}}
+        {item.sender !== 'user' ? (
+          <Typical
+            steps={[item.text, 1000000]}
+            loop={1}
+            wrapper="Text"
+            style={styles.botText}
           />
-        )}
-        <Text style={item.sender === 'user' ? styles.userText : styles.botText}>
-          {item.text}1
-        </Text>
+          ) : (
+            <Text style={styles.userText}>{item.text}</Text>
+          )}
       </View>
     </View>
   );
 
   return (
     <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       style={styles.container}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
     >
       <FlatList
         ref={flatListRef}
         data={messages}
-        keyExtractor={item => item.id.toString()}
+        keyExtractor={(item) => item.id.toString()}
         renderItem={renderMessage}
         contentContainerStyle={styles.messageList}
         onContentSizeChange={() =>

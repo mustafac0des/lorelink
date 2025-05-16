@@ -20,23 +20,17 @@ export default function Main() {
     }, []);
 
     return (
-    <Stack.Navigator
-        screenOptions={{
-        headerStyle: { backgroundColor: '#6200ee' },
-        headerTintColor: '#fff',
-        headerShown: true,
-        }}
-    >
+    <Stack.Navigator screenOptions={{headerStyle: { backgroundColor: '#6200ee' }}}>
         {!user ? (
         <>
-            <Stack.Screen name="Onboarding" component={Onboarding}/>
-            <Stack.Screen name="SignIn" component={SignIn}/>
-            <Stack.Screen name="SignUp" component={SignUp}/>
+            <Stack.Screen name="Onboarding" component={Onboarding} />
+            <Stack.Screen name="SignIn" component={SignIn} />
+            <Stack.Screen name="SignUp" component={SignUp} />
         </>
         ) : (
         <>
-            <Stack.Screen name="Home"component={BottomTabs}options={{ headerShown: true }}/>
-            <Stack.Screen name="Edit"component={EditProfileScreen}options={{ title: 'Edit Profile' }}/>
+            <Stack.Screen name="BottomTabs" component={BottomTabs} />
+            <Stack.Screen name="Edit"component={EditProfileScreen} />
         </>
         )}
     </Stack.Navigator>

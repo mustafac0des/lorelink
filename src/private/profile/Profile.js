@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { View, TouchableOpacity, ActivityIndicator, ToastAndroid } from 'react-native';
 import { Text, Button, Avatar } from '@rneui/themed';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
@@ -8,6 +8,7 @@ import { db } from '../../../firebaseConfig';
 import { PostsTab, CommentsTab } from './ProfileTabs';
 import { handleSignOut } from '../../functions/userService';
 import { getUserProfile } from '../../functions/dummyServices';
+import { useFocusEffect } from '@react-navigation/native';
 
 const Tab = createMaterialTopTabNavigator();
 
@@ -15,34 +16,37 @@ export default function ProfileScreen({ route, navigation }) {
   const { dummyId, userId, isOwnProfile = false } = route.params;
   const [profileData, setProfileData] = useState(null);
   const [loading, setLoading] = useState(true);
-  
-  useEffect(() => {
-    const fetchProfileData = async () => {
-      try {
-        setLoading(true);
 
-        if (dummyId != undefined) {
-          const userData = await getUserProfile(dummyId)
-          setProfileData(userData);
-        }
-        
-        const currentUser = auth.currentUser;
-        const userDocRef = doc(db, 'users', isOwnProfile ? currentUser.uid : userId);
-        const userDoc = await getDoc(userDocRef);
-        
-        if (userDoc.exists()) {
-          setProfileData(userDoc.data());
-        } else {
-          ToastAndroid.show('Profile not found!', ToastAndroid.SHORT);
-        }
-      } catch (err) {
-        ToastAndroid.show(err.message, ToastAndroid.SHORT);
+  const fetchProfileData = async () => {
+    try {
+      setLoading(true);
+
+      if (dummyId != undefined) {
+        const userData = await getUserProfile(dummyId)
+        setProfileData(userData);
       }
+      
+      const currentUser = auth.currentUser;
+      const userDocRef = doc(db, 'users', isOwnProfile ? currentUser.uid : userId);
+      const userDoc = await getDoc(userDocRef);
+      
+      if (userDoc.exists()) {
+        setProfileData(userDoc.data());
+      } else {
+        ToastAndroid.show('Profile not found!', ToastAndroid.SHORT);
+      }
+    } catch (err) {
+      ToastAndroid.show(err.message, ToastAndroid.SHORT);
+    }
 
-      setLoading(false);
-    };
-    fetchProfileData();
-  }, [userId, isOwnProfile]);
+    setLoading(false);
+  };
+
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchProfileData();
+    }, [userId, isOwnProfile])
+  );
 
   const renderHeaderRight = () => {
     if (isOwnProfile) {
@@ -105,7 +109,7 @@ export default function ProfileScreen({ route, navigation }) {
           <Avatar
             size={80}
             rounded
-            source={{uri: profileData.picture || 'https://static.vecteezy.com/system/resources/previews/009/292/244/non_2x/default-avatar-icon-of-social-media-user-vector.jpg'}}
+            source={{uri: profileData.picture !== 'null'? profileData.picture: 'https://static.vecteezy.com/system/resources/previews/009/292/244/non_2x/default-avatar-icon-of-social-media-user-vector.jpg'}}
             containerStyle={styles.avatarContainer}
           />
         </View>

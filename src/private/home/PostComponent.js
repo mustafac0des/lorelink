@@ -79,9 +79,11 @@ export default function PostComponent({ postInfo }) {
           <Text style={styles.dateText}>{datePosted}</Text>
         </View>
       </View>
-
-      <Text style={styles.postText}>{postText}</Text>
-
+      <Text style={styles.postText}>
+        {postText.split(' ').length > 30
+          ? postText.split(' ').slice(0, 30).join(' ') + '...'
+          : postText}
+      </Text>
       <View style={styles.actions}>
         <Button
           type="clear"
@@ -129,7 +131,6 @@ export default function PostComponent({ postInfo }) {
           }}
         />
       </View>
-
       {showCommentInput && (
         <View style={styles.commentBox}>
           <Input

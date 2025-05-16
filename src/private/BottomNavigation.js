@@ -35,6 +35,8 @@ export function BottomTabs() {
       <Tab.Screen 
         name="Compose"
         component={Compose}
+        options={{headerStyle: { backgroundColor: '#6200ee' },
+        headerTintColor: '#fff'}}
       />
       <Tab.Screen 
         name="Profile"
@@ -50,13 +52,12 @@ const tabStyles = {
     tabBarActiveBackgroundColor: '#f7e3ff',
     tabBarActiveTintColor: '#6200ee',
     tabBarInactiveTintColor: '#757575',
-    headerStyle: { backgroundColor: '#6200ee' },
-    headerTintColor: '#fff',
   },
   homeOptions: {
+    headerShown: false,
+  },
+  composeOptions: {
     headerShown: true,
-    headerTitle: 'Lorelink',
-    headerTitleAlign: 'center',
   },
   profileOptions: {
     headerShown: false,
