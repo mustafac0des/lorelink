@@ -1,43 +1,45 @@
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from 'firebase/auth';
-
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, sendEmailVerification, signOut } from 'firebase/auth';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { auth, db } from '../../firebaseConfig';
 
 import { ToastAndroid } from "react-native";
 
-export const handleSignUp = async (email, password, confirmPassword) => {
-    if (!email || !password || !confirmPassword) {
-      ToastAndroid.show('Fill in all fields!', ToastAndroid.SHORT);
-      return;
-    }
+export const handleSignUp = async (email, password, confirmPassword, selectedGender) => {
+  if (!email || !password || !confirmPassword) {
+    ToastAndroid.show('Fill in all fields!', ToastAndroid.SHORT);
+    return;
+  }
 
-    if (password !== confirmPassword) {
-      ToastAndroid.show('Passwords do not match!', ToastAndroid.SHORT);
-      return;
-    }
+  if (password !== confirmPassword) {
+    ToastAndroid.show('Passwords do not match!', ToastAndroid.SHORT);
+    return;
+  }
 
-    ToastAndroid.show('Signing up...', ToastAndroid.SHORT);
+  ToastAndroid.show('Signing up...', ToastAndroid.SHORT);
 
-    try {
-      await createUserWithEmailAndPassword(auth, email, password);
-      
-      const data = () => {
-        return {
-          username: email.split('@')[0],
-          email: email,
-          biography: "Hey There, I am new to Lorelink!",
-          name: "new user",
-          picture: "null"
-        };
+  try {
+    await createUserWithEmailAndPassword(auth, email, password);
+
+    if (auth.currentUser) {
+      await sendEmailVerification(auth.currentUser);
+
+      const data = {
+        username: email.split('@')[0],
+        email,
+        biography: 'Hey There, I am new to Lorelink!',
+        name: 'new user',
+        picture: 'null',
+        gender: selectedGender,
       };
 
-      if (auth.currentUser) {
-        await setDoc(doc(db, 'users', auth.currentUser.uid), data());
-      }
-      ToastAndroid.show('Signed up successfully!', ToastAndroid.SHORT);
-    } catch (err) {
-      ToastAndroid.show(err.message, ToastAndroid.SHORT);
+      await setDoc(doc(db, 'users', auth.currentUser.uid), data);
     }
+
+    ToastAndroid.show('Signed up successfully! Verify your email to continue.', ToastAndroid.LONG);
+    await signOut(auth);
+  } catch (err) {
+    ToastAndroid.show(err.message, ToastAndroid.SHORT);
+  }
 };
 
 export const handleSignIn = async (email, password) => {
@@ -47,12 +49,21 @@ export const handleSignIn = async (email, password) => {
   }
 
   try {
-    await signInWithEmailAndPassword(auth, email, password);
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
+
+    if (!user.emailVerified) {
+      ToastAndroid.show('Please verify your email before signing in!', ToastAndroid.LONG);
+      await signOut(auth);
+      return;
+    }
+
     ToastAndroid.show('Signed in successfully!', ToastAndroid.SHORT);
   } catch (err) {
     ToastAndroid.show(err.message, ToastAndroid.SHORT);
   }
 };
+
 
 export const getProfile = async (uid) => {
   const docRef = doc(db, 'users', uid);

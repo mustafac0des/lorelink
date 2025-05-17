@@ -10,6 +10,9 @@ import { handleSignOut } from '../../functions/userService';
 import { getUserProfile } from '../../functions/dummyServices';
 import { useFocusEffect } from '@react-navigation/native';
 
+import male_default from '../../../assets/male_default.jpg';
+import female_default from '../../../assets/female_default.jpg';
+
 const Tab = createMaterialTopTabNavigator();
 
 export default function ProfileScreen({ route, navigation }) {
@@ -109,7 +112,7 @@ export default function ProfileScreen({ route, navigation }) {
           <Avatar
             size={80}
             rounded
-            source={{uri: profileData.picture !== 'null'? profileData.picture: 'https://static.vecteezy.com/system/resources/previews/009/292/244/non_2x/default-avatar-icon-of-social-media-user-vector.jpg'}}
+            source={profileData.picture !== 'null' ? { uri: profileData.picture } : (profileData.gender === 'male' ? male_default : female_default)}
             containerStyle={styles.avatarContainer}
           />
         </View>

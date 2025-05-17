@@ -1,13 +1,17 @@
 import { useState } from 'react';
 import { View } from 'react-native';
-import { Input, Button, Text, Icon } from '@rneui/themed';
+import { Input, Button, Text, Icon, ButtonGroup } from '@rneui/themed';
 
 import { handleSignUp } from '../functions/userService'
 
-export default function SignUp ({ navigation }) {
+export default function SignUp({ navigation }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [genderIndex, setGenderIndex] = useState(null);
+  const genders = ['male', 'female'];
+
+  const selectedGender = genderIndex !== null ? genders[genderIndex] : 'male';
 
   return (
     <View style={{ flex: 1, padding: 16, justifyContent: 'center', backgroundColor: '#ffffff' }}>
@@ -19,8 +23,8 @@ export default function SignUp ({ navigation }) {
             size={64}
             color="#6200ee"
           />
-          <Text 
-            h4 
+          <Text
+            h4
             style={{ marginLeft: 8, fontWeight: 'bold' }}
           >
             Lorelink
@@ -57,9 +61,31 @@ export default function SignUp ({ navigation }) {
           leftIcon={{ type: 'material-community', name: 'lock', color: '#666' }}
         />
 
+        <Text style={{ marginLeft: 10, marginBottom: 6, color: '#666' }}>Select Gender</Text>
+        <ButtonGroup
+          buttons={genders}
+          selectedIndex={genderIndex}
+          onPress={setGenderIndex}
+          containerStyle={{
+            marginBottom: 16,
+            borderRadius: 8,
+            borderColor: '#ccc',
+          }}
+          buttonContainerStyle={{
+            borderRadius: 8,
+          }}
+          selectedButtonStyle={{
+            backgroundColor: '#6200ee',
+          }}
+          selectedTextStyle={{
+            color: '#fff',
+          }}
+        />
+
+
         <Button
           title="Sign Up"
-          onPress={() => handleSignUp(email, password, confirmPassword)}
+          onPress={() => handleSignUp(email, password, confirmPassword, selectedGender)}
           buttonStyle={{ backgroundColor: '#6200ee', height: 56, borderRadius: 8 }}
           containerStyle={{ marginTop: 16 }}
         />

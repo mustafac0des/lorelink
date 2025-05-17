@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { ScrollView, StyleSheet, View, RefreshControl, ActivityIndicator, ToastAndroid } from 'react-native';
+import { ScrollView, StyleSheet, View, RefreshControl, ActivityIndicator, ToastAndroid, Alert } from 'react-native';
 import { Text } from '@rneui/themed';
 import PostComponent from './PostComponent';
+import { getAuth } from 'firebase/auth';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '../../../firebaseConfig';
 
 import { DUMMY_POSTS, DUMMY_USERS } from '../../functions/dummyServices';
 
@@ -11,6 +14,37 @@ export default function Home () {
   const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
+    const checkUserProfile = async () => {
+      try {
+        const currentUser = getAuth().currentUser;
+        if (currentUser) {
+          const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
+          const userData = userDoc.data();
+          
+          if (userData.name === 'new user' || userData.picture === 'null') {
+            Alert.alert(
+              'Complete Your Profile',
+              'Please take a moment to set up your profile picture and name to get the most out of LoreLink!',
+              [
+                {
+                  text: 'Later',
+                  style: 'cancel'
+                },
+                {
+                  text: 'Set Up Now',
+                  onPress: () => navigation.navigate('Edit')
+                }
+              ]
+            );
+          }
+        }
+      } catch (error) {
+        console.error('Error checking profile:', error);
+      }
+    };
+
+    checkUserProfile();
+    
     const loadPosts = () => {
       try {
         const postsWithUserData = DUMMY_POSTS.map(post => {

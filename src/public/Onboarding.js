@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View } from 'react-native';
 import { Button, Text, Icon } from '@rneui/themed';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const onboardingSteps = [
   {
@@ -20,7 +21,7 @@ const onboardingSteps = [
   },
 ];
 
-export default function Onboarding({ navigation }) {
+export default function Onboarding() {
   const [currentStep, setCurrentStep] = useState(0);
 
   const handleStep = (count) => async () => {
@@ -28,7 +29,7 @@ export default function Onboarding({ navigation }) {
     if (newStep >= 0 && newStep < onboardingSteps.length) {
       setCurrentStep(newStep);
     } else {
-      navigation.replace('SignIn');
+      await AsyncStorage.setItem('onboardingCompleted', 'true');
     }
   };  
 
