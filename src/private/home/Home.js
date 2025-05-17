@@ -52,7 +52,7 @@ export default function Home () {
           return {
             ...post,
             userImage: userData?.picture || 'https://static.vecteezy.com/system/resources/previews/009/292/244/non_2x/default-avatar-icon-of-social-media-user-vector.jpg',
-            userName: userData?.name,
+            username: userData?.username,
             isFollowed: userData?.isFollowed,
             likeCount: Object.keys(post.likes || {}).length,
             commentCount: (post.comments || []).length

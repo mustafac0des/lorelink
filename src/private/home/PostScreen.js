@@ -3,6 +3,9 @@ import { View, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
 import { Text, Input, Button, Icon, Avatar } from '@rneui/themed';
 import { useNavigation } from '@react-navigation/native';
 import { getPost } from '../../functions/dummyServices';
+import { getAuth } from 'firebase/auth';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '../../../firebaseConfig';
 
 const DEFAULT_AVATAR = 'https://static.vecteezy.com/system/resources/previews/009/292/244/non_2x/default-avatar-icon-of-social-media-user-vector.jpg';
 
@@ -36,19 +39,33 @@ export default function PostScreen({ route }) {
     });
   };
 
-  const handleComment = () => {
+  const handleComment = async () => {
     if (!commentText.trim()) return;
 
-    const newComment = {
-      id: Date.now().toString(),
-      userName: 'Current User',
-      userImage: DEFAULT_AVATAR,
-      text: commentText.trim(),
-      timestamp: new Date().toLocaleString(),
-    };
+    try {
+      const auth = getAuth();
+      const currentUser = auth.currentUser;
+      
+      if (!currentUser) {
+        return;
+      }
 
-    setComments(prev => [...prev, newComment]);
-    setCommentText('');
+      const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
+      const userData = userDoc.data();
+
+      const newComment = {
+        id: Date.now().toString(),
+        userName: userData?.name || 'Anonymous',
+        userImage: userData?.picture || DEFAULT_AVATAR,
+        text: commentText.trim(),
+        timestamp: new Date().toLocaleString(),
+      };
+
+      setComments(prev => [...prev, newComment]);
+      setCommentText('');
+    } catch (error) {
+      console.error('Error adding comment:', error);
+    }
   };
 
   if (!postInfo) return null;
@@ -67,7 +84,7 @@ export default function PostScreen({ route }) {
           </TouchableOpacity>
           <View style={styles.headerTextContainer}>
             <TouchableOpacity onPress={() => handleUserPress(postInfo.user)}>
-              <Text style={styles.userName}>{postInfo.user.name}</Text>
+              <Text style={styles.userName}>{postInfo.user.username}</Text>
             </TouchableOpacity>
             <Text style={styles.datePosted}>{postInfo.datePosted}</Text>
           </View>
@@ -110,7 +127,7 @@ export default function PostScreen({ route }) {
               </TouchableOpacity>
               <View style={styles.commentTextContainer}>
                 <View style={styles.commentHeader}>
-                  <Text style={styles.commentUserName}>{comment.name}</Text>
+                  <Text style={styles.commentUserName}>{comment.username}</Text>
                   <Text style={styles.commentTimestamp}>{comment.timestamp}</Text>
                 </View>
                 <Text style={styles.commentText}>{comment.text}</Text>

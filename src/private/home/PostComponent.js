@@ -19,8 +19,8 @@ export default function PostComponent({ postInfo }) {
     }
   }, [postInfo]);
 
-  const userImage = postInfo?.userImage || postInfo?.user?.picture || 'https://static.vecteezy.com/system/resources/previews/009/292/244/non_2x/default-avatar-icon-of-social-media-user-vector.jpg';
-  const userName = postInfo?.userName || postInfo?.user?.name || 'Anonymous';
+  const userImage = postInfo?.userImage || postInfo?.user?.picture;
+  const username = postInfo?.username;
   const isFollowed = postInfo?.isFollowed || false;
 
   const {
@@ -64,7 +64,7 @@ export default function PostComponent({ postInfo }) {
         <View style={styles.userDetails}>
           <View style={styles.nameRow}>
             <TouchableOpacity onPress={handleUserPress}>
-              <Text style={styles.userName}>{userName}</Text>
+              <Text style={styles.userName}>{username}</Text>
             </TouchableOpacity>
             {!isFollowed && (
               <Button
