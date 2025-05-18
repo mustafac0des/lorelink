@@ -109,7 +109,7 @@ export const getPost = (pid) => {
       id:            c.uid + '_' + (c.dateCommented||Date.now()),
       text:          c.text,
       timestamp:     c.dateCommented,
-      name:          commenter.name,
+      username:          commenter.username,
       userPicture:     commenter.picture || DEFAULT_AVATAR,
     };
   });  
@@ -126,7 +126,7 @@ export const getPost = (pid) => {
     likeCount:   Object.keys(postData.likes || {}).length,
     commentCount:postData.comments?.length || 0,
     user: {
-      name:     author.name || 'Unknown',
+      username:     author.username || 'Unknown',
       picture:  author.picture || ''
     },
   };

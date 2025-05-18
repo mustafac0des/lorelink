@@ -21,7 +21,7 @@ export default function Main() {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
       setUser(firebaseUser);
-      checkOnboardingStatus(); // call after auth is known
+      checkOnboardingStatus();
     });
 
     return unsubscribe;
@@ -35,15 +35,17 @@ export default function Main() {
 
   if (loading) {
     return (
-      <View style={{ flex:1, justifyContent:'center', alignItems:'center' }}>
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
         <ActivityIndicator size="large" color="#6200ee" />
       </View>
     );
   }
 
+  const isVerified = user && user.emailVerified;
+
   return (
     <Stack.Navigator screenOptions={{ headerStyle: { backgroundColor: '#6200ee' } }}>
-      {!user ? (
+      {!user || !isVerified ? (
         <>
           {!onboardingCompleted && <Stack.Screen name="Onboarding" component={Onboarding} />}
           <Stack.Screen name="SignIn" component={SignIn} />

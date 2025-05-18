@@ -21,7 +21,7 @@ const onboardingSteps = [
   },
 ];
 
-export default function Onboarding() {
+export default function Onboarding({ navigation }) {
   const [currentStep, setCurrentStep] = useState(0);
 
   const handleStep = (count) => async () => {
@@ -30,6 +30,7 @@ export default function Onboarding() {
       setCurrentStep(newStep);
     } else {
       await AsyncStorage.setItem('onboardingCompleted', 'true');
+      navigation.navigate('SignIn');
     }
   };  
 

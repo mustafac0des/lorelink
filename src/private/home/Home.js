@@ -8,7 +8,7 @@ import { db } from '../../../firebaseConfig';
 
 import { DUMMY_POSTS, DUMMY_USERS } from '../../functions/dummyServices';
 
-export default function Home () {
+export default function Home ({ navigation }) {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -27,13 +27,9 @@ export default function Home () {
               'Please take a moment to set up your profile picture and name to get the most out of LoreLink!',
               [
                 {
-                  text: 'Later',
+                  text: 'Okay',
                   style: 'cancel'
                 },
-                {
-                  text: 'Set Up Now',
-                  onPress: () => navigation.navigate('Edit')
-                }
               ]
             );
           }

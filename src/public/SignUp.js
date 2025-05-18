@@ -85,7 +85,11 @@ export default function SignUp({ navigation }) {
 
         <Button
           title="Sign Up"
-          onPress={() => handleSignUp(email, password, confirmPassword, selectedGender)}
+          onPress={() => {handleSignUp(email, password, confirmPassword, selectedGender);
+            setTimeout(() => {
+              navigation.navigate('SignIn');
+            }, 3000);
+          } }
           buttonStyle={{ backgroundColor: '#6200ee', height: 56, borderRadius: 8 }}
           containerStyle={{ marginTop: 16 }}
         />

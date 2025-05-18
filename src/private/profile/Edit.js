@@ -285,10 +285,6 @@ export default function EditProfileScreen({ navigation }) {
               await deleteUser(currentUser);
               
               ToastAndroid.show('Account deleted successfully', ToastAndroid.SHORT);
-              navigation.reset({
-                index: 0,
-                routes: [{ name: 'SignIn' }],
-              });
             } catch (error) {
               if (error.code === 'auth/wrong-password') {
                 setPasswordError('Password is incorrect');

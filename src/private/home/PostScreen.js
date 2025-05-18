@@ -55,7 +55,7 @@ export default function PostScreen({ route }) {
 
       const newComment = {
         id: Date.now().toString(),
-        userName: userData?.name || 'Anonymous',
+        username: userData?.username,
         userImage: userData?.picture || DEFAULT_AVATAR,
         text: commentText.trim(),
         timestamp: new Date().toLocaleString(),
@@ -69,6 +69,7 @@ export default function PostScreen({ route }) {
   };
 
   if (!postInfo) return null;
+  console.log(postInfo)
 
   return (
     <View style={styles.container}>
@@ -121,7 +122,7 @@ export default function PostScreen({ route }) {
                 <Avatar
                   size={32}
                   rounded
-                  source={{ uri: comment.userPicture || DEFAULT_AVATAR }}
+                  source={{ uri: comment.userPicture || comment.userImage }}
                   containerStyle={styles.avatar}
                 />
               </TouchableOpacity>

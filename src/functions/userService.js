@@ -33,10 +33,10 @@ export const handleSignUp = async (email, password, confirmPassword, selectedGen
       };
 
       await setDoc(doc(db, 'users', auth.currentUser.uid), data);
+      await signOut(auth);
     }
 
     ToastAndroid.show('Signed up successfully! Verify your email to continue.', ToastAndroid.LONG);
-    await signOut(auth);
   } catch (err) {
     ToastAndroid.show(err.message, ToastAndroid.SHORT);
   }
