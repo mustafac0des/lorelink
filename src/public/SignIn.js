@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { View } from 'react-native';
 import { Input, Button, Text, Icon } from '@rneui/themed';
-import { handleSignIn } from '../functions/userService' 
+import { handleSignIn } from '../backend/Services';
 
 export default function SignIn ({ navigation }) {
   

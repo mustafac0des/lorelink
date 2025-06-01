@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { View, ScrollView, StyleSheet, ToastAndroid, ActivityIndicator } from 'react-native';
+import { View, ScrollView, ToastAndroid, ActivityIndicator } from 'react-native';
 import { Text, Button, Input, Avatar } from '@rneui/themed';
 import * as ImagePicker from 'expo-image-picker';
-import { getAuth, updatePassword, EmailAuthProvider, reauthenticateWithCredential, deleteUser } from 'firebase/auth';
-import { doc, updateDoc, getDoc, deleteDoc } from 'firebase/firestore';
-import { db } from '../../../firebaseConfig';
+import { getAuth } from 'firebase/auth';
+import { fetchProfileData, updateProfile, deleteProfile, handleUpdatePassword } from '../../backend/Services';
+import male_avatar from '../../../assets/male_default.jpg';
+import female_avatar from '../../../assets/female_default.jpg';
 
 const auth = getAuth();
 
-export default function EditProfileScreen({ navigation }) {
+export default function Edit({ navigation }) {
   const [loading, setLoading] = useState(false);
   const [name, setName] = useState('');
   const [bio, setBio] = useState('');
@@ -17,37 +18,27 @@ export default function EditProfileScreen({ navigation }) {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [passwordError, setPasswordError] = useState('');
-  
+  const [gender, setGender] = useState('male');
+
   useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        setLoading(true);
-        const currentUser = auth.currentUser;
-        if (!currentUser) {
-          ToastAndroid.show('User not authenticated', ToastAndroid.SHORT);
-          navigation.goBack();
-          return;
-        }
-        
-        const userDocRef = doc(db, 'users', currentUser.uid);
-        const userDoc = await getDoc(userDocRef);
-        
-        if (userDoc.exists()) {
-          const userData = userDoc.data();
-          setName(userData.name !== 'null' ? userData.name : '');
-          setBio(userData.biography || '');
-          setProfileImage(userData.picture !== 'null' ? userData.picture : null);
-        }
-      } catch (err) {
-        ToastAndroid.show(err.message, ToastAndroid.SHORT);
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    fetchUserData();
+    loadProfile();
   }, []);
-  
+
+  const loadProfile = async () => {
+    setLoading(true);
+    try {
+      const userData = await fetchProfileData(undefined, auth.currentUser.uid, true);
+      setName(userData.name);
+      setBio(userData.biography);
+      setProfileImage(userData.picture);
+      setGender(userData.gender);
+    } catch {
+      ToastAndroid.show('Error loading profile!', ToastAndroid.SHORT);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const pickImage = async () => {
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
@@ -57,140 +48,103 @@ export default function EditProfileScreen({ navigation }) {
         quality: 0.5,
         base64: true,
       });
-      
       if (!result.canceled) {
         const imageUri = result.assets[0].uri;
         const imageBase64 = `data:image/jpeg;base64,${result.assets[0].base64}`;
         setProfileImage({ uri: imageUri, base64: imageBase64 });
       }
-    } catch (error) {
-      ToastAndroid.show('Error selecting image', ToastAndroid.SHORT);
+    } catch {
+      ToastAndroid.show('Error selecting image!', ToastAndroid.SHORT);
     }
   };
-  
-  const updateProfile = async () => {
+
+  const handleUpdateProfile = async () => {
+    setLoading(true);
     try {
-      setLoading(true);
-      const currentUser = auth.currentUser;
-      
-      if (!currentUser) {
-        ToastAndroid.show('User not authenticated', ToastAndroid.SHORT);
-        return;
-      }
-      
-      let imageData = 'null';
-      
-      if (profileImage) {
-        if (typeof profileImage === 'object' && profileImage.base64) {
-          imageData = profileImage.base64;
-        } 
-        else if (typeof profileImage === 'string') {
-          imageData = profileImage;
-        }
-      }
-      
-      const userDocRef = doc(db, 'users', currentUser.uid);
-      await updateDoc(userDocRef, {
-        name: name || 'null',
-        biography: bio,
-        picture: imageData
-      });
-      
-      ToastAndroid.show('Profile updated successfully', ToastAndroid.SHORT);
-      navigation.goBack();
-    } catch (error) {
-      ToastAndroid.show('Error updating profile: ' + err.message, ToastAndroid.SHORT);
+      await updateProfile(name, bio, profileImage, { navigation });
+      ToastAndroid.show('Profile updated!', ToastAndroid.SHORT);
+    } catch {
+      ToastAndroid.show('Error updating profile', ToastAndroid.SHORT);
     } finally {
       setLoading(false);
     }
   };
-  
+
   const updateUserPassword = async () => {
     setPasswordError('');
-    
     if (!currentPassword) {
-      setPasswordError('Current password is required');
+      ToastAndroid.show('Password is required', ToastAndroid.SHORT);
       return;
     }
-    
     if (newPassword !== confirmPassword) {
-      setPasswordError('New passwords do not match');
+      ToastAndroid.show('Passwords do not match', ToastAndroid.SHORT);
       return;
     }
-    
     if (newPassword.length < 6) {
-      setPasswordError('Password must be at least 6 characters');
+      ToastAndroid.show('Password must be at least 6 characters long', ToastAndroid.SHORT);
       return;
     }
-    
+
+    setLoading(true);
     try {
-      setLoading(true);
-      const currentUser = auth.currentUser;
-      const credential = EmailAuthProvider.credential(
-        currentUser.email,
-        currentPassword
-      );
-      
-      await reauthenticateWithCredential(currentUser, credential);
-      await updatePassword(currentUser, newPassword);
-      
+      await handleUpdatePassword(currentPassword, newPassword);
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
-      
-      ToastAndroid.show('Password updated successfully', ToastAndroid.SHORT);
-    } catch (error) {
-      if (error.code === 'auth/wrong-password') {
-        setPasswordError('Current password is incorrect');
-      } else {
-        setPasswordError(error.message);
-      }
+    } catch (err) {
+      ToastAndroid.show(err.message, ToastAndroid.SHORT);
     } finally {
       setLoading(false);
     }
   };
-  
+
+  const handleDeleteProfile = async () => {
+    setPasswordError('');
+    if (!currentPassword) {
+      setPasswordError('Password is required to delete account');
+      return;
+    }
+    setLoading(true);
+    try {
+      await deleteProfile(currentPassword);
+    } catch (err) {
+      ToastAndroid.show(err.message, ToastAndroid.SHORT);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (loading && !profileImage) {
     return (
-      <View style={styles.loadingContainer}>
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
         <ActivityIndicator size="large" color="#6200ee" />
-        <Text style={styles.loadingText}>Loading profile data...</Text>
+        <Text style={{ marginTop: 10 }}>Loading profile data...</Text>
       </View>
     );
   }
-  
+
   return (
-    <ScrollView style={styles.container}>      
-      <View style={styles.imageContainer}>
+    <ScrollView style={{ flex: 1, backgroundColor: '#fff' }}>
+      <View style={{ alignItems: 'center', padding: 20 }}>
         <Avatar
           size={100}
           rounded
-          source={{
-            uri: profileImage
-              ? (typeof profileImage === 'object' ? profileImage.uri : profileImage)
-              : 'https://static.vecteezy.com/system/resources/previews/009/292/244/non_2x/default-avatar-icon-of-social-media-user-vector.jpg'
-          }}
-          containerStyle={styles.avatar}
+          source={
+            profileImage && profileImage !== 'null'
+              ? typeof profileImage === 'string'
+                ? { uri: profileImage }
+                : profileImage
+              : gender === 'male'
+              ? male_avatar
+              : female_avatar
+          }
+          containerStyle={{ borderColor: '#6200ee', borderWidth: 2 }}
         />
-        <Button
-          title="Change Photo"
-          type="clear"
-          onPress={pickImage}
-          titleStyle={styles.changePhotoText}
-        />
+        <Button title="Change Photo" type="clear" onPress={pickImage} titleStyle={{ color: '#6200ee' }} />
       </View>
-      
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Profile Information</Text>
-        
-        <Input
-          label="Display Name"
-          value={name}
-          onChangeText={setName}
-          placeholder="Enter your name"
-          containerStyle={styles.inputContainer}
-        />
-        
+      <View style={{ padding: 15 }}>
+        <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 15 }}>Profile Information</Text>
+        <Input label="Display Name" value={name} onChangeText={setName} placeholder="Enter your name" />
         <Input
           label="Bio"
           value={bio}
@@ -198,175 +152,69 @@ export default function EditProfileScreen({ navigation }) {
           placeholder="Tell us about yourself"
           multiline
           numberOfLines={3}
-          containerStyle={styles.inputContainer}
         />
-        
         <Button
           title="Save Profile Changes"
-          onPress={updateProfile}
-          buttonStyle={styles.saveButton}
+          onPress={handleUpdateProfile}
           loading={loading}
           disabled={loading}
+          buttonStyle={{ backgroundColor: '#6200ee', borderRadius: 8, marginTop: 10 }}
         />
       </View>
-      
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Change Password</Text>
-        
+      <View style={{ padding: 15 }}>
+        <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 15 }}>Change Password</Text>
         <Input
           label="Current Password"
           value={currentPassword}
           onChangeText={setCurrentPassword}
           secureTextEntry
           placeholder="Enter current password"
-          containerStyle={styles.inputContainer}
         />
-        
         <Input
           label="New Password"
           value={newPassword}
           onChangeText={setNewPassword}
           secureTextEntry
           placeholder="Enter new password"
-          containerStyle={styles.inputContainer}
         />
-        
         <Input
           label="Confirm New Password"
           value={confirmPassword}
           onChangeText={setConfirmPassword}
           secureTextEntry
           placeholder="Confirm new password"
-          containerStyle={styles.inputContainer}
           errorMessage={passwordError}
         />
-        
         <Button
           title="Update Password"
           onPress={updateUserPassword}
-          buttonStyle={styles.passwordButton}
           loading={loading}
           disabled={loading || !currentPassword || !newPassword || !confirmPassword}
+          buttonStyle={{ backgroundColor: '#6200ee', borderRadius: 8, marginTop: 10 }}
         />
       </View>
-
-      <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: '#d32f2f' }]}>Delete Account</Text>
-        <Text style={styles.warningText}>This action cannot be undone. All your data will be permanently deleted.</Text>
-        
+      <View style={{ padding: 15 }}>
+        <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#d32f2f', marginBottom: 10 }}>Delete Account</Text>
+        <Text style={{ color: '#d32f2f', marginBottom: 15 }}>
+          This action cannot be undone. All your data will be permanently deleted.
+        </Text>
         <Input
           label="Current Password"
           value={currentPassword}
           onChangeText={setCurrentPassword}
           secureTextEntry
           placeholder="Enter your password to confirm"
-          containerStyle={styles.inputContainer}
           errorMessage={passwordError}
         />
-        
         <Button
           title="Delete Account"
-          onPress={async () => {
-            try {
-              if (!currentPassword) {
-                setPasswordError('Password is required to delete account');
-                return;
-              }
-              
-              setLoading(true);
-              const currentUser = auth.currentUser;
-              const credential = EmailAuthProvider.credential(
-                currentUser.email,
-                currentPassword
-              );
-              
-              await reauthenticateWithCredential(currentUser, credential);
-              await deleteDoc(doc(db, 'users', currentUser.uid));
-              await deleteUser(currentUser);
-              
-              ToastAndroid.show('Account deleted successfully', ToastAndroid.SHORT);
-            } catch (error) {
-              if (error.code === 'auth/wrong-password') {
-                setPasswordError('Password is incorrect');
-              } else {
-                ToastAndroid.show('Error deleting account: ' + error.message, ToastAndroid.SHORT);
-              }
-            } finally {
-              setLoading(false);
-            }
-          }}
-          buttonStyle={styles.deleteButton}
-          titleStyle={styles.deleteButtonText}
+          onPress={handleDeleteProfile}
           loading={loading}
           disabled={loading}
+          buttonStyle={{ backgroundColor: '#d32f2f', borderRadius: 8, marginTop: 10 }}
+          titleStyle={{ color: '#fff' }}
         />
       </View>
     </ScrollView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loadingText: {
-    marginTop: 10,
-  },
-  header: {
-    padding: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
-  },
-  imageContainer: {
-    alignItems: 'center',
-    padding: 20,
-  },
-  avatar: {
-    borderColor: '#6200ee',
-    borderWidth: 2,
-  },
-  changePhotoText: {
-    color: '#6200ee',
-  },
-  section: {
-    padding: 15,
-    marginBottom: 20,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 15,
-  },
-  inputContainer: {
-    marginBottom: 10,
-  },
-  saveButton: {
-    backgroundColor: '#6200ee',
-    borderRadius: 8,
-    marginTop: 10,
-  },
-  passwordButton: {
-    backgroundColor: '#6200ee',
-    borderRadius: 8,
-    marginTop: 10,
-  },
-  deleteButton: {
-    backgroundColor: '#d32f2f',
-    borderRadius: 8,
-    marginTop: 10,
-  },
-  deleteButtonText: {
-    color: '#fff',
-  },
-  warningText: {
-    color: '#d32f2f',
-    marginBottom: 15,
-    fontSize: 14,
-  },
-});

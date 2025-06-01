@@ -3,19 +3,17 @@ import {
   View,
   FlatList,
   KeyboardAvoidingView,
-  StyleSheet,
   TextInput,
   TouchableOpacity,
   Text,
 } from 'react-native';
 import { Icon } from '@rneui/themed';
 import Typical from 'react-native-typical';
-
-const themeColor = '#6200ee';
-
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { collection, doc, setDoc, onSnapshot } from 'firebase/firestore';
-import { db } from '../../../firebaseConfig';
+import { db } from '../../../firebase.config';
+
+const themeColor = '#6200ee';
 
 export default function Compose() {
   const [messages, setMessages] = useState([]);
@@ -26,7 +24,7 @@ export default function Compose() {
   useEffect(() => {
     const auth = getAuth();
     let unsubscribeChats = () => {};
-  
+
     const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
       if (user) {
         const chatRef = collection(db, 'users', user.uid, 'chats');
@@ -36,20 +34,21 @@ export default function Compose() {
           setMessages(fetchedMessages);
         });
       } else {
-        unsubscribeChats(); 
+        unsubscribeChats();
         setMessages([]);
       }
     });
-  
+
     return () => {
       unsubscribeAuth();
       unsubscribeChats();
     };
   }, []);
-  
+
   const sendToGemini = async (prompt) => {
     try {
       prompt = prompt + " /END if this typed message is a query about generating/writing a story, generate one, otherwise, generate random poem of 4 lines, depicting that the typed query is not requesting about writing a story and type that lorelink a social platform with AI powered to share and generate stories using Generative AI so ask for one instead. Don't explicitly type anything besides what I have instructed you on.";
+
       const res = await fetch(
         'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=AIzaSyDDzzVVEnKmBBQ93Md0on4fmgZQLiPn9m0',
         {
@@ -67,13 +66,10 @@ export default function Compose() {
           }),
         }
       );
-  
-      if (!res.ok) {
-        throw new Error(`HTTP error! status: ${res.status}`);
-      }
-    
+
+      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+
       const data = await res.json();
-    
       if (!data?.candidates?.[0]?.content?.parts?.[0]?.text) {
         throw new Error('Invalid response format from API');
       }
@@ -88,48 +84,49 @@ export default function Compose() {
   const handleSend = async () => {
     if (!draft.trim()) return;
 
-    const timestamp = new Date().getTime();
+    const timestamp = Date.now();
     const messageId = `msg_${timestamp}`;
 
     try {
       const auth = getAuth();
       const user = auth.currentUser;
-      if (!user) {
-        throw new Error('User not authenticated');
-      }
-  
+      if (!user) throw new Error('User not authenticated');
+
       const userMessage = {
         id: messageId,
         text: draft.trim(),
         sender: 'user',
-        timestamp
+        timestamp,
       };
-  
+
       const userRef = doc(collection(db, 'users', user.uid, 'chats'));
       await setDoc(userRef, userMessage);
       setDraft('');
       setLoading(true);
-  
+
       const aiText = await sendToGemini(userMessage.text);
+
       const aiMessage = {
         id: `msg_${Date.now()}`,
         text: aiText,
         sender: 'bot',
-        timestamp: Date.now()
+        timestamp: Date.now(),
       };
-  
+
       const botRef = doc(collection(db, 'users', user.uid, 'chats'));
       await setDoc(botRef, aiMessage);
-  
     } catch (err) {
       console.error('Error in handleSend:', err);
+      const auth = getAuth();
+      const user = auth.currentUser;
+
       const errorMessage = {
         id: `msg_${Date.now()}`,
         text: 'Failed to get response. Please try again.',
         sender: 'bot',
-        timestamp: Date.now()
+        timestamp: Date.now(),
       };
-  
+
       if (user) {
         const errorRef = doc(collection(db, 'users', user.uid, 'chats'));
         await setDoc(errorRef, errorMessage);
@@ -139,22 +136,26 @@ export default function Compose() {
     }
   };
 
-  const renderMessage = ({ item, index }) => {
+  const renderMessage = ({ item }) => {
     const isLastBotMessage = item.sender === 'bot' &&
       messages.filter(m => m.sender === 'bot').slice(-1)[0]?.id === item.id;
-  
+
     return (
       <View
-        style={[
-          styles.messageContainer,
-          item.sender === 'user' ? styles.userAlign : styles.botAlign,
-        ]}
+        style={{
+          marginVertical: 6,
+          maxWidth: '80%',
+          alignSelf: item.sender === 'user' ? 'flex-end' : 'flex-start',
+        }}
       >
         <View
-          style={[
-            styles.messageBubble,
-            item.sender === 'user' ? styles.userBubble : styles.botBubble,
-          ]}
+          style={{
+            padding: 12,
+            borderRadius: 16,
+            backgroundColor: item.sender === 'user' ? themeColor : '#f2f2f2',
+            borderBottomRightRadius: item.sender === 'user' ? 4 : 16,
+            borderBottomLeftRadius: item.sender === 'bot' ? 4 : 16,
+          }}
         >
           {item.sender === 'bot' ? (
             isLastBotMessage ? (
@@ -162,38 +163,55 @@ export default function Compose() {
                 steps={[item.text, 1000000]}
                 loop={1}
                 wrapper="Text"
-                style={styles.botText}
+                style={{ color: '#000' }}
               />
             ) : (
-              <Text style={styles.botText}>{item.text}</Text>
+              <Text style={{ color: '#000' }}>{item.text}</Text>
             )
           ) : (
-            <Text style={styles.userText}>{item.text}</Text>
+            <Text style={{ color: '#fff' }}>{item.text}</Text>
           )}
         </View>
       </View>
     );
   };
-  
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-    >
+    <KeyboardAvoidingView style={{ flex: 1, backgroundColor: '#fff' }}>
       <FlatList
         ref={flatListRef}
         data={messages}
         keyExtractor={(item) => item.id.toString()}
         renderItem={renderMessage}
-        contentContainerStyle={styles.messageList}
+        contentContainerStyle={{ padding: 16, paddingBottom: 80 }}
         onContentSizeChange={() =>
           flatListRef.current?.scrollToEnd({ animated: true })
         }
       />
-
-      <View style={styles.inputWrapper}>
+      <View
+        style={{
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          paddingHorizontal: 16,
+          paddingVertical: 10,
+          borderTopWidth: 1,
+          borderColor: '#e0e0e0',
+          flexDirection: 'row',
+          alignItems: 'center',
+          backgroundColor: '#fff',
+        }}
+      >
         <TextInput
-          style={styles.textInput}
+          style={{
+            flex: 1,
+            backgroundColor: '#f0f0f0',
+            borderRadius: 24,
+            paddingHorizontal: 16,
+            paddingVertical: 10,
+            maxHeight: 100,
+          }}
           placeholder="Message LoreLink AI..."
           value={draft}
           onChangeText={setDraft}
@@ -203,7 +221,7 @@ export default function Compose() {
         <TouchableOpacity
           onPress={handleSend}
           disabled={!draft.trim() || loading}
-          style={styles.sendButton}
+          style={{ marginLeft: 10 }}
         >
           <Icon
             name={loading ? 'hourglass-empty' : 'send'}
@@ -215,66 +233,3 @@ export default function Compose() {
     </KeyboardAvoidingView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
-  messageList: {
-    padding: 16,
-    paddingBottom: 80,
-  },
-  messageContainer: {
-    marginVertical: 6,
-    maxWidth: '80%',
-  },
-  userAlign: {
-    alignSelf: 'flex-end',
-  },
-  botAlign: {
-    alignSelf: 'flex-start',
-  },
-  messageBubble: {
-    padding: 12,
-    borderRadius: 16,
-  },
-  userBubble: {
-    backgroundColor: themeColor,
-    borderBottomRightRadius: 4,
-  },
-  botBubble: {
-    backgroundColor: '#f2f2f2',
-    borderBottomLeftRadius: 4,
-  },
-  userText: {
-    color: '#fff',
-  },
-  botText: {
-    color: '#000',
-  },
-  inputWrapper: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderTopWidth: 1,
-    borderColor: '#e0e0e0',
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-  },
-  textInput: {
-    flex: 1,
-    backgroundColor: '#f0f0f0',
-    borderRadius: 24,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    maxHeight: 100,
-  },
-  sendButton: {
-    marginLeft: 10,
-  },
-});
